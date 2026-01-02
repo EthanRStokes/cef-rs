@@ -41,12 +41,11 @@ glib-unix = "0.22"
 io-surface = "0.16"
 libc = "0.2"
 libloading = "0.9"
-metal = "0.33"
-objc = "0.2"
 objc2 = "0.6.3"
 objc2-app-kit = { version = "0.3.2", default-features = false }
 objc2-foundation = "0.3.2"
 objc2-io-surface = "0.3.2"
+objc2-metal = { version = "0.3", features = ["objc2-io-surface"] }
 plist = "1"
 proc-macro2 = "1"
 quote = "1"
@@ -58,7 +57,7 @@ syn = { version = "2", features = ["full"] }
 thiserror = "2"
 toml_edit = "0.25"
 tracing = "0.1"
-wgpu = "28"
+wgpu = "29"
 winres = "0.1"
 x11-dl = "2"
 

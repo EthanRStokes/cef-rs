@@ -2,8 +2,7 @@ mod webrender;
 
 use cef::{args::Args, *};
 use std::{cell::RefCell, process::ExitCode, sync::Arc, thread::sleep, time::Duration};
-use wgpu::Backends;
-use wgpu::util::DeviceExt;
+use wgpu::{Backends, CurrentSurfaceTexture, util::DeviceExt};
 use winit::{
     application::ApplicationHandler,
     event::WindowEvent,
@@ -30,7 +29,7 @@ struct State {
 
 impl State {
     async fn new(window: Arc<Window>) -> State {
-        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
+        let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             #[cfg(target_os = "windows")]
             backends: Backends::from_comma_list("dx12"),
             #[cfg(target_os = "macos")]
@@ -38,7 +37,7 @@ impl State {
             #[cfg(target_os = "linux")]
             backends: Backends::from_comma_list("vulkan"),
             //flags: wgpu::InstanceFlags::debugging(),
-            ..Default::default()
+            ..wgpu::InstanceDescriptor::new_without_display_handle()
         });
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
@@ -91,7 +90,7 @@ impl State {
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("Cef Pipeline Layout"),
-                bind_group_layouts: &[&texture_bind_group_layout],
+                bind_group_layouts: &[Some(&texture_bind_group_layout)],
                 immediate_size: 0,
             });
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
@@ -178,10 +177,15 @@ impl State {
     }
 
     fn render(&mut self) {
-        let surface_texture = self
-            .surface
-            .get_current_texture()
-            .expect("failed to acquire next swapchain texture");
+        let surface_texture = match self.surface.get_current_texture() {
+            CurrentSurfaceTexture::Success(success) => success,
+            CurrentSurfaceTexture::Suboptimal(suboptimal) => {
+                self.configure_surface();
+                suboptimal
+            }
+            _ => return,
+        };
+
         let frame = surface_texture
             .texture
             .create_view(&wgpu::TextureViewDescriptor {

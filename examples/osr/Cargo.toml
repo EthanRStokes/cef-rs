@@ -26,9 +26,8 @@ windows = { workspace = true }
 libloading.workspace = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
-metal.workspace = true
-objc.workspace = true
-io-surface.workspace = true
+objc2-metal.workspace = true
+objc2-io-surface.workspace = true
 
 [target.'cfg(target_os = "linux")'.dependencies]
 libc.workspace = true
