@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- use `fs_err` instead of `std::fs` for file operations
+
 ## [2.3.0](https://github.com/tauri-apps/cef-rs/compare/download-cef-v2.2.1...download-cef-v2.3.0) - 2026-01-01
 
 ### Added
