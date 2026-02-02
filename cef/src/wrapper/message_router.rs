@@ -666,6 +666,10 @@ impl BrowserSideRouter {
             return;
         };
 
+        if browser_query_info_map.is_empty() {
+            return;
+        }
+
         struct Visitor {
             router: Arc<BrowserSideRouter>,
             handler_id: Option<HandlerId>,
