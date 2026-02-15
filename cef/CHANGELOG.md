@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Filter undefined values for optional cefQuery persistent field
+
 ## [144.0.1+144.0.6](https://github.com/tauri-apps/cef-rs/compare/cef-v144.0.0+144.0.6...cef-v144.0.1+144.0.6) - 2026-01-22
 
 ### Other

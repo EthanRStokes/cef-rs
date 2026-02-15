@@ -1691,7 +1691,7 @@ wrap_v8_handler! {
                 };
 
                 let key = CefString::from(ObjectMember::PERSISTENT);
-                let persistent = if let Some(persistent) = arg.value_bykey(Some(&key)) {
+                let persistent = if let Some(persistent) = arg.value_bykey(Some(&key)).filter(|v| v.is_undefined() == 0) {
                     if persistent.is_bool() == 0 {
                         return_exception!(format!(
                             "Invalid arguments; object member '{}' must have type boolean",
