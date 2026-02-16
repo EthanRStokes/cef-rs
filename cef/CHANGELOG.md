@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Filter undefined values for optional cefQuery persistent field
 - port missing early returns in BrowserSideRouter and BrowserInfoMap to prevent panics during startup
 - return string responses as V8 strings instead of ArrayBuffer from RendererSideRouter
 
