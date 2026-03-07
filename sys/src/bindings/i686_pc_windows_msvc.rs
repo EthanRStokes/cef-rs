@@ -26,14 +26,14 @@ pub const CEF_API_VERSION_LAST: i32 = 14500;
 pub const CEF_API_VERSION_EXPERIMENTAL: i32 = 999999;
 pub const CEF_API_VERSION_NEXT: i32 = 999998;
 pub const CEF_API_VERSION: i32 = 999999;
-pub const CEF_VERSION: &[u8; 42] = b"145.0.27+g4ddda2e+chromium-145.0.7632.117\0";
+pub const CEF_VERSION: &[u8; 42] = b"145.0.28+g51162e8+chromium-145.0.7632.160\0";
 pub const CEF_VERSION_MAJOR: i32 = 145;
 pub const CEF_VERSION_MINOR: i32 = 0;
-pub const CEF_VERSION_PATCH: i32 = 27;
+pub const CEF_VERSION_PATCH: i32 = 28;
 pub const CHROME_VERSION_MAJOR: i32 = 145;
 pub const CHROME_VERSION_MINOR: i32 = 0;
 pub const CHROME_VERSION_BUILD: i32 = 7632;
-pub const CHROME_VERSION_PATCH: i32 = 117;
+pub const CHROME_VERSION_PATCH: i32 = 160;
 unsafe extern "C" {
     #[doc = "\n Configures the CEF API version and returns API hashes for the libcef\n library. The returned string is owned by the library and should not be\n freed. The |version| parameter should be CEF_API_VERSION and any changes to\n this value will be ignored after the first call to this method. The |entry|\n parameter describes which hash value will be returned:\n\n 0 - CEF_API_HASH_PLATFORM\n 1 - CEF_API_HASH_UNIVERSAL (deprecated, same as CEF_API_HASH_PLATFORM)\n 2 - CEF_COMMIT_HASH (from cef_version.h)\n"]
     pub fn cef_api_hash(
