@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [145.6.1+145.0.28](https://github.com/tauri-apps/cef-rs/compare/cef-v145.6.0+145.0.28...cef-v145.6.1+145.0.28) - 2026-03-08
+
+### Other
+
+- update bindings
+
 ## [145.1.1+145.0.23](https://github.com/tauri-apps/cef-rs/compare/cef-v145.1.0+145.0.23...cef-v145.1.1+145.0.23) - 2026-02-16
 
 ### Other
