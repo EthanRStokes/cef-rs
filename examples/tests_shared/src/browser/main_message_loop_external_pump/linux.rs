@@ -1,5 +1,6 @@
 use super::*;
 use glib::*;
+use glib_unix::*;
 use std::{
     io::{self, Read, Write},
     os::fd::AsRawFd,
@@ -64,7 +65,7 @@ impl MainMessageLoopExternalPumpInner {
         let work_source = {
             let pump = pump.clone();
             let delayed_work_time = delayed_work_time.clone();
-            unix_fd_source_new(
+            fd_source_new(
                 wakeup_pipe_read.as_raw_fd(),
                 IOCondition::IN,
                 None,
