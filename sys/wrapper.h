@@ -110,5 +110,6 @@
 #include "include/capi/views/cef_view_delegate_capi.h"
 #include "include/capi/views/cef_window_capi.h"
 #include "include/capi/views/cef_window_delegate_capi.h"
+#include "include/cef_color_ids.h"
 
 #endif
