@@ -1,4 +1,4 @@
-use convert_case::{Case, Casing};
+use convert_case::{Boundary, Case, Casing, Pattern};
 use quote::{format_ident, quote, ToTokens};
 use regex::Regex;
 use std::{
@@ -3493,6 +3493,15 @@ fn make_my_struct() -> {rust_name} {{
                             }
                         }
                         let value = &tokens[skipped..].join("_");
+                        let value = value
+                            .trim_start_matches("CEF_")
+                            .trim_start_matches('k')
+                            .from_case(Case::Custom {
+                                boundaries: &[Boundary::LowerUpper, Boundary::Acronym],
+                                pattern: Pattern::Capital,
+                                delimiter: "",
+                            })
+                            .to_case(Case::Constant);
                         let value_ident = format_ident!("{value}");
                         let comment = format!("See [`{name}::{v}`] for more documentation.");
                         quote! {
