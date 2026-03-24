@@ -541,6 +541,7 @@ pub struct Settings {
     pub chrome_policy_id: CefString,
     pub chrome_app_icon_id: ::std::os::raw::c_int,
     pub disable_signal_handlers: ::std::os::raw::c_int,
+    pub use_views_default_popup: ::std::os::raw::c_int,
 }
 impl Settings {
     fn get_raw(&self) -> _cef_settings_t {
@@ -580,6 +581,7 @@ impl From<_cef_settings_t> for Settings {
             chrome_policy_id: value.chrome_policy_id.into(),
             chrome_app_icon_id: value.chrome_app_icon_id,
             disable_signal_handlers: value.disable_signal_handlers,
+            use_views_default_popup: value.use_views_default_popup,
         }
     }
 }
@@ -616,6 +618,7 @@ impl From<Settings> for _cef_settings_t {
             chrome_policy_id: value.chrome_policy_id.into(),
             chrome_app_icon_id: value.chrome_app_icon_id,
             disable_signal_handlers: value.disable_signal_handlers,
+            use_views_default_popup: value.use_views_default_popup,
         }
     }
 }
@@ -31142,6 +31145,92 @@ impl From<V8ArrayBufferReleaseCallback> for *mut _cef_v8_array_buffer_release_ca
     }
 }
 
+/// See [`_cef_v8_backing_store_t`] for more documentation.
+#[derive(Clone)]
+pub struct V8BackingStore(RefGuard<_cef_v8_backing_store_t>);
+pub trait ImplV8BackingStore: Clone + Sized + Rc {
+    #[doc = "See [`_cef_v8_backing_store_t::data`] for more documentation."]
+    fn data(&self) -> *mut ::std::os::raw::c_void;
+    #[doc = "See [`_cef_v8_backing_store_t::byte_length`] for more documentation."]
+    fn byte_length(&self) -> usize;
+    #[doc = "See [`_cef_v8_backing_store_t::is_valid`] for more documentation."]
+    fn is_valid(&self) -> ::std::os::raw::c_int;
+    fn get_raw(&self) -> *mut _cef_v8_backing_store_t;
+}
+impl ImplV8BackingStore for V8BackingStore {
+    fn data(&self) -> *mut ::std::os::raw::c_void {
+        unsafe {
+            self.0
+                .data
+                .map(|f| {
+                    let arg_self_ = self.into_raw();
+                    let result = f(arg_self_);
+                    result.wrap_result()
+                })
+                .unwrap_or_else(|| std::mem::zeroed())
+        }
+    }
+    fn byte_length(&self) -> usize {
+        unsafe {
+            self.0
+                .byte_length
+                .map(|f| {
+                    let arg_self_ = self.into_raw();
+                    let result = f(arg_self_);
+                    result.wrap_result()
+                })
+                .unwrap_or_default()
+        }
+    }
+    fn is_valid(&self) -> ::std::os::raw::c_int {
+        unsafe {
+            self.0
+                .is_valid
+                .map(|f| {
+                    let arg_self_ = self.into_raw();
+                    let result = f(arg_self_);
+                    result.wrap_result()
+                })
+                .unwrap_or_default()
+        }
+    }
+    fn get_raw(&self) -> *mut _cef_v8_backing_store_t {
+        unsafe { RefGuard::into_raw(&self.0) }
+    }
+}
+impl Rc for _cef_v8_backing_store_t {
+    fn as_base(&self) -> &_cef_base_ref_counted_t {
+        self.base.as_base()
+    }
+}
+impl Rc for V8BackingStore {
+    fn as_base(&self) -> &_cef_base_ref_counted_t {
+        self.0.as_base()
+    }
+}
+impl ConvertParam<*mut _cef_v8_backing_store_t> for &V8BackingStore {
+    fn into_raw(self) -> *mut _cef_v8_backing_store_t {
+        ImplV8BackingStore::get_raw(self)
+    }
+}
+impl ConvertParam<*mut _cef_v8_backing_store_t> for &mut V8BackingStore {
+    fn into_raw(self) -> *mut _cef_v8_backing_store_t {
+        ImplV8BackingStore::get_raw(self)
+    }
+}
+impl ConvertReturnValue<V8BackingStore> for *mut _cef_v8_backing_store_t {
+    fn wrap_result(self) -> V8BackingStore {
+        V8BackingStore(unsafe { RefGuard::from_raw(self) })
+    }
+}
+impl From<V8BackingStore> for *mut _cef_v8_backing_store_t {
+    fn from(value: V8BackingStore) -> Self {
+        let object = ImplV8BackingStore::get_raw(&value);
+        std::mem::forget(value);
+        object
+    }
+}
+
 /// See [`_cef_v8_value_t`] for more documentation.
 #[derive(Clone)]
 pub struct V8Value(RefGuard<_cef_v8_value_t>);
@@ -44839,9 +44928,9 @@ impl ContentSettingTypes {
     #[doc = "See [`cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_SITE_ENGAGEMENT`] for more documentation."]
     pub const SITE_ENGAGEMENT: Self =
         Self(cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_SITE_ENGAGEMENT);
-    #[doc = "See [`cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_DURABLE_STORAGE`] for more documentation."]
-    pub const DURABLE_STORAGE: Self =
-        Self(cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_DURABLE_STORAGE);
+    #[doc = "See [`cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_PERSISTENT_STORAGE`] for more documentation."]
+    pub const PERSISTENT_STORAGE: Self =
+        Self(cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_PERSISTENT_STORAGE);
     #[doc = "See [`cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_USB_CHOOSER_DATA`] for more documentation."]
     pub const USB_CHOOSER_DATA: Self =
         Self(cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_USB_CHOOSER_DATA);
@@ -45029,10 +45118,8 @@ impl ContentSettingTypes {
     #[doc = "See [`cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_ANTI_ABUSE`] for more documentation."]
     pub const ANTI_ABUSE: Self =
         Self(cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_ANTI_ABUSE);
-    #[doc = "See [`cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_THIRD_PARTY_STORAGE_PARTITIONING`] for more documentation."]
-    pub const THIRD_PARTY_STORAGE_PARTITIONING: Self = Self(
-        cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_THIRD_PARTY_STORAGE_PARTITIONING,
-    );
+    #[doc = "See [`cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_THIRD_PARTY_STORAGE_PARTITIONING_DEPRECATED`] for more documentation."]
+    pub const THIRD_PARTY_STORAGE_PARTITIONING_DEPRECATED : Self = Self (cef_content_setting_types_t :: CEF_CONTENT_SETTING_TYPE_THIRD_PARTY_STORAGE_PARTITIONING_DEPRECATED) ;
     #[doc = "See [`cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_HTTPS_ENFORCED`] for more documentation."]
     pub const HTTPS_ENFORCED: Self =
         Self(cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_HTTPS_ENFORCED);
@@ -45097,9 +45184,9 @@ impl ContentSettingTypes {
         Self(cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_POINTER_LOCK);
     #[doc = "See [`cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_REVOKED_ABUSIVE_NOTIFICATION_PERMISSIONS`] for more documentation."]
     pub const REVOKED_ABUSIVE_NOTIFICATION_PERMISSIONS : Self = Self (cef_content_setting_types_t :: CEF_CONTENT_SETTING_TYPE_REVOKED_ABUSIVE_NOTIFICATION_PERMISSIONS) ;
-    #[doc = "See [`cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_TRACKING_PROTECTION`] for more documentation."]
-    pub const TRACKING_PROTECTION: Self =
-        Self(cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_TRACKING_PROTECTION);
+    #[doc = "See [`cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_TRACKING_PROTECTION_DEPRECATED`] for more documentation."]
+    pub const TRACKING_PROTECTION_DEPRECATED: Self =
+        Self(cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_TRACKING_PROTECTION_DEPRECATED);
     #[doc = "See [`cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_DISPLAY_MEDIA_SYSTEM_AUDIO`] for more documentation."]
     pub const DISPLAY_MEDIA_SYSTEM_AUDIO: Self =
         Self(cef_content_setting_types_t::CEF_CONTENT_SETTING_TYPE_DISPLAY_MEDIA_SYSTEM_AUDIO);
@@ -46162,8 +46249,6 @@ impl Errorcode {
     pub const PROXY_HTTP_1_1_REQUIRED: Self = Self(cef_errorcode_t::ERR_PROXY_HTTP_1_1_REQUIRED);
     #[doc = "See [`cef_errorcode_t::ERR_PAC_SCRIPT_TERMINATED`] for more documentation."]
     pub const PAC_SCRIPT_TERMINATED: Self = Self(cef_errorcode_t::ERR_PAC_SCRIPT_TERMINATED);
-    #[doc = "See [`cef_errorcode_t::ERR_PROXY_REQUIRED`] for more documentation."]
-    pub const PROXY_REQUIRED: Self = Self(cef_errorcode_t::ERR_PROXY_REQUIRED);
     #[doc = "See [`cef_errorcode_t::ERR_INVALID_HTTP_RESPONSE`] for more documentation."]
     pub const INVALID_HTTP_RESPONSE: Self = Self(cef_errorcode_t::ERR_INVALID_HTTP_RESPONSE);
     #[doc = "See [`cef_errorcode_t::ERR_CONTENT_DECODING_INIT_FAILED`] for more documentation."]
@@ -51863,6 +51948,8 @@ impl ColorId {
     pub const COLOR_ICON: Self = Self(cef_color_id_t::CEF_ColorIcon);
     #[doc = "See [`cef_color_id_t::CEF_ColorIconDisabled`] for more documentation."]
     pub const COLOR_ICON_DISABLED: Self = Self(cef_color_id_t::CEF_ColorIconDisabled);
+    #[doc = "See [`cef_color_id_t::CEF_ColorIconHovered`] for more documentation."]
+    pub const COLOR_ICON_HOVERED: Self = Self(cef_color_id_t::CEF_ColorIconHovered);
     #[doc = "See [`cef_color_id_t::CEF_ColorIconSecondary`] for more documentation."]
     pub const COLOR_ICON_SECONDARY: Self = Self(cef_color_id_t::CEF_ColorIconSecondary);
     #[doc = "See [`cef_color_id_t::CEF_ColorInfoBarIcon`] for more documentation."]
@@ -52883,6 +52970,9 @@ impl ColorId {
     pub const COLOR_FIND_BAR_BACKGROUND: Self = Self(cef_color_id_t::CEF_ColorFindBarBackground);
     #[doc = "See [`cef_color_id_t::CEF_ColorFindBarButtonIcon`] for more documentation."]
     pub const COLOR_FIND_BAR_BUTTON_ICON: Self = Self(cef_color_id_t::CEF_ColorFindBarButtonIcon);
+    #[doc = "See [`cef_color_id_t::CEF_ColorFindBarButtonIconHovered`] for more documentation."]
+    pub const COLOR_FIND_BAR_BUTTON_ICON_HOVERED: Self =
+        Self(cef_color_id_t::CEF_ColorFindBarButtonIconHovered);
     #[doc = "See [`cef_color_id_t::CEF_ColorFindBarButtonIconDisabled`] for more documentation."]
     pub const COLOR_FIND_BAR_BUTTON_ICON_DISABLED: Self =
         Self(cef_color_id_t::CEF_ColorFindBarButtonIconDisabled);
@@ -53525,9 +53615,6 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorOmniboxComposeboxFileThumbnailOverlayIcon`] for more documentation."]
     pub const COLOR_OMNIBOX_COMPOSEBOX_FILE_THUMBNAIL_OVERLAY_ICON: Self =
         Self(cef_color_id_t::CEF_ColorOmniboxComposeboxFileThumbnailOverlayIcon);
-    #[doc = "See [`cef_color_id_t::CEF_ColorOmniboxComposeboxForegroundDisabled`] for more documentation."]
-    pub const COLOR_OMNIBOX_COMPOSEBOX_FOREGROUND_DISABLED: Self =
-        Self(cef_color_id_t::CEF_ColorOmniboxComposeboxForegroundDisabled);
     #[doc = "See [`cef_color_id_t::CEF_ColorOmniboxComposeboxPrimaryAction`] for more documentation."]
     pub const COLOR_OMNIBOX_COMPOSEBOX_PRIMARY_ACTION: Self =
         Self(cef_color_id_t::CEF_ColorOmniboxComposeboxPrimaryAction);
@@ -53543,6 +53630,9 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorOmniboxContextEntrypointText`] for more documentation."]
     pub const COLOR_OMNIBOX_CONTEXT_ENTRYPOINT_TEXT: Self =
         Self(cef_color_id_t::CEF_ColorOmniboxContextEntrypointText);
+    #[doc = "See [`cef_color_id_t::CEF_ColorOmniboxForegroundDisabled`] for more documentation."]
+    pub const COLOR_OMNIBOX_FOREGROUND_DISABLED: Self =
+        Self(cef_color_id_t::CEF_ColorOmniboxForegroundDisabled);
     #[doc = "See [`cef_color_id_t::CEF_ColorOmniboxIconBackground`] for more documentation."]
     pub const COLOR_OMNIBOX_ICON_BACKGROUND: Self =
         Self(cef_color_id_t::CEF_ColorOmniboxIconBackground);
@@ -54058,6 +54148,9 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLineFocusLowContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_LINE_FOCUS_LOW_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingLineFocusLowContrast);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLineFocusScrim`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_LINE_FOCUS_SCRIM: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingLineFocusScrim);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLineFocusSepiaLight`] for more documentation."]
     pub const COLOR_READ_ANYTHING_LINE_FOCUS_SEPIA_LIGHT: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingLineFocusSepiaLight);
@@ -54253,6 +54346,114 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlightSepiaDark`] for more documentation."]
     pub const COLOR_READ_ANYTHING_PREVIOUS_READ_ALOUD_HIGHLIGHT_SEPIA_DARK: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlightSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackground`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackground);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundBlue`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND_BLUE: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundBlue);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundYellow`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND_YELLOW: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundYellow);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundHighContrast`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND_HIGH_CONTRAST: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundHighContrast);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundLowContrast`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND_LOW_CONTRAST: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundLowContrast);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundSepiaLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND_SEPIA_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundSepiaLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundSepiaDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND_SEPIA_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIcon`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIcon);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconBlue`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON_BLUE: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconBlue);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconYellow`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON_YELLOW: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconYellow);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconHighContrast`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON_HIGH_CONTRAST: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconHighContrast);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconLowContrast`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON_LOW_CONTRAST: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconLowContrast);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconSepiaLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON_SEPIA_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconSepiaLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconSepiaDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON_SEPIA_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIcon`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIcon);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconBlue`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_BLUE: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconBlue);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconYellow`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_YELLOW: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconYellow);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconHighContrast`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_HIGH_CONTRAST: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconHighContrast);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconLowContrast`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_LOW_CONTRAST: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconLowContrast);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconSepiaLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_SEPIA_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconSepiaLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconSepiaDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_SEPIA_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIcon`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIcon);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconBlue`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON_BLUE: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconBlue);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconYellow`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON_YELLOW: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconYellow);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconHighContrast`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON_HIGH_CONTRAST: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconHighContrast);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconLowContrast`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON_LOW_CONTRAST: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconLowContrast);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconSepiaLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON_SEPIA_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconSepiaLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconSepiaDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON_SEPIA_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconSepiaDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorSearchboxAnswerIconBackground`] for more documentation."]
     pub const COLOR_SEARCHBOX_ANSWER_ICON_BACKGROUND: Self =
         Self(cef_color_id_t::CEF_ColorSearchboxAnswerIconBackground);
@@ -55127,9 +55328,9 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorToolbarTopSeparatorFrameInactive`] for more documentation."]
     pub const COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_INACTIVE: Self =
         Self(cef_color_id_t::CEF_ColorToolbarTopSeparatorFrameInactive);
-    #[doc = "See [`cef_color_id_t::CEF_ColorVerticalTabStripBottomButtonBackground`] for more documentation."]
-    pub const COLOR_VERTICAL_TAB_STRIP_BOTTOM_BUTTON_BACKGROUND: Self =
-        Self(cef_color_id_t::CEF_ColorVerticalTabStripBottomButtonBackground);
+    #[doc = "See [`cef_color_id_t::CEF_ColorVerticalTabStripShadow`] for more documentation."]
+    pub const COLOR_VERTICAL_TAB_STRIP_SHADOW: Self =
+        Self(cef_color_id_t::CEF_ColorVerticalTabStripShadow);
     #[doc = "See [`cef_color_id_t::CEF_ColorWebAuthnHoverButtonForeground`] for more documentation."]
     pub const COLOR_WEB_AUTHN_HOVER_BUTTON_FOREGROUND: Self =
         Self(cef_color_id_t::CEF_ColorWebAuthnHoverButtonForeground);
@@ -56950,6 +57151,19 @@ pub fn v8_context_in_context() -> ::std::os::raw::c_int {
     }
 }
 
+/// See [`cef_v8_backing_store_create`] for more documentation.
+pub fn v8_backing_store_create(byte_length: usize) -> Option<V8BackingStore> {
+    unsafe {
+        let arg_byte_length = byte_length;
+        let result = cef_v8_backing_store_create(arg_byte_length);
+        if result.is_null() {
+            None
+        } else {
+            Some(result.wrap_result())
+        }
+    }
+}
+
 /// See [`cef_v8_value_create_undefined`] for more documentation.
 pub fn v8_value_create_undefined() -> Option<V8Value> {
     unsafe {
@@ -57126,6 +57340,27 @@ pub fn v8_value_create_array_buffer_with_copy(buffer: *mut u8, length: usize) ->
         let (arg_buffer, arg_length) = (buffer, length);
         let arg_buffer = arg_buffer.cast();
         let result = cef_v8_value_create_array_buffer_with_copy(arg_buffer, arg_length);
+        if result.is_null() {
+            None
+        } else {
+            Some(result.wrap_result())
+        }
+    }
+}
+
+/// See [`cef_v8_value_create_array_buffer_from_backing_store`] for more documentation.
+pub fn v8_value_create_array_buffer_from_backing_store(
+    backing_store: Option<&mut V8BackingStore>,
+) -> Option<V8Value> {
+    unsafe {
+        let arg_backing_store = backing_store;
+        let arg_backing_store = arg_backing_store
+            .map(|arg| {
+                arg.add_ref();
+                ImplV8BackingStore::get_raw(arg)
+            })
+            .unwrap_or(std::ptr::null_mut());
+        let result = cef_v8_value_create_array_buffer_from_backing_store(arg_backing_store);
         if result.is_null() {
             None
         } else {
