@@ -710,6 +710,7 @@ pub struct BrowserSettings {
     pub background_color: u32,
     pub chrome_status_bubble: State,
     pub chrome_zoom_bubble: State,
+    pub ax_viewport_collapse: State,
 }
 impl BrowserSettings {
     fn get_raw(&self) -> _cef_browser_settings_t {
@@ -747,6 +748,7 @@ impl From<_cef_browser_settings_t> for BrowserSettings {
             background_color: value.background_color,
             chrome_status_bubble: value.chrome_status_bubble.into(),
             chrome_zoom_bubble: value.chrome_zoom_bubble.into(),
+            ax_viewport_collapse: value.ax_viewport_collapse.into(),
         }
     }
 }
@@ -781,6 +783,7 @@ impl From<BrowserSettings> for _cef_browser_settings_t {
             background_color: value.background_color,
             chrome_status_bubble: value.chrome_status_bubble.into(),
             chrome_zoom_bubble: value.chrome_zoom_bubble.into(),
+            ax_viewport_collapse: value.ax_viewport_collapse.into(),
         }
     }
 }
@@ -6216,6 +6219,9 @@ pub struct BrowserHost {
     pub get_runtime_style: ::std::option::Option<
         unsafe extern "stdcall" fn(self_: *mut _cef_browser_host_t) -> cef_runtime_style_t,
     >,
+    pub set_ax_viewport_collapse: ::std::option::Option<
+        unsafe extern "stdcall" fn(self_: *mut _cef_browser_host_t, enabled: ::std::os::raw::c_int),
+    >,
 }
 impl BrowserHost {
     fn get_raw(&self) -> _cef_browser_host_t {
@@ -6294,6 +6300,7 @@ impl From<_cef_browser_host_t> for BrowserHost {
             execute_chrome_command: value.execute_chrome_command,
             is_render_process_unresponsive: value.is_render_process_unresponsive,
             get_runtime_style: value.get_runtime_style,
+            set_ax_viewport_collapse: value.set_ax_viewport_collapse,
         }
     }
 }
@@ -6369,6 +6376,7 @@ impl From<BrowserHost> for _cef_browser_host_t {
             execute_chrome_command: value.execute_chrome_command,
             is_render_process_unresponsive: value.is_render_process_unresponsive,
             get_runtime_style: value.get_runtime_style,
+            set_ax_viewport_collapse: value.set_ax_viewport_collapse,
         }
     }
 }

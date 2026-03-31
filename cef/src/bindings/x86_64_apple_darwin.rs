@@ -695,6 +695,7 @@ pub struct BrowserSettings {
     pub background_color: u32,
     pub chrome_status_bubble: State,
     pub chrome_zoom_bubble: State,
+    pub ax_viewport_collapse: State,
 }
 impl BrowserSettings {
     fn get_raw(&self) -> _cef_browser_settings_t {
@@ -732,6 +733,7 @@ impl From<_cef_browser_settings_t> for BrowserSettings {
             background_color: value.background_color,
             chrome_status_bubble: value.chrome_status_bubble.into(),
             chrome_zoom_bubble: value.chrome_zoom_bubble.into(),
+            ax_viewport_collapse: value.ax_viewport_collapse.into(),
         }
     }
 }
@@ -766,6 +768,7 @@ impl From<BrowserSettings> for _cef_browser_settings_t {
             background_color: value.background_color,
             chrome_status_bubble: value.chrome_status_bubble.into(),
             chrome_zoom_bubble: value.chrome_zoom_bubble.into(),
+            ax_viewport_collapse: value.ax_viewport_collapse.into(),
         }
     }
 }
@@ -12743,6 +12746,8 @@ pub trait ImplBrowserHost: Clone + Sized + Rc {
     fn is_render_process_unresponsive(&self) -> ::std::os::raw::c_int;
     #[doc = "See [`_cef_browser_host_t::get_runtime_style`] for more documentation."]
     fn runtime_style(&self) -> RuntimeStyle;
+    #[doc = "See [`_cef_browser_host_t::set_ax_viewport_collapse`] for more documentation."]
+    fn set_ax_viewport_collapse(&self, enabled: ::std::os::raw::c_int);
     fn get_raw(&self) -> *mut _cef_browser_host_t;
 }
 impl ImplBrowserHost for BrowserHost {
@@ -13801,6 +13806,15 @@ impl ImplBrowserHost for BrowserHost {
                     result.wrap_result()
                 })
                 .unwrap_or_default()
+        }
+    }
+    fn set_ax_viewport_collapse(&self, enabled: ::std::os::raw::c_int) {
+        unsafe {
+            if let Some(f) = self.0.set_ax_viewport_collapse {
+                let arg_enabled = enabled;
+                let arg_self_ = self.into_raw();
+                f(arg_self_, arg_enabled);
+            }
         }
     }
     fn get_raw(&self) -> *mut _cef_browser_host_t {
