@@ -27,10 +27,10 @@ pub const CEF_API_VERSION_LAST: i32 = 14600;
 pub const CEF_API_VERSION_EXPERIMENTAL: i32 = 999999;
 pub const CEF_API_VERSION_NEXT: i32 = 999998;
 pub const CEF_API_VERSION: i32 = 999999;
-pub const CEF_VERSION: &[u8; 41] = b"146.0.7+ga6b143f+chromium-146.0.7680.165\0";
+pub const CEF_VERSION: &[u8; 41] = b"146.0.9+g3ca6a87+chromium-146.0.7680.165\0";
 pub const CEF_VERSION_MAJOR: i32 = 146;
 pub const CEF_VERSION_MINOR: i32 = 0;
-pub const CEF_VERSION_PATCH: i32 = 7;
+pub const CEF_VERSION_PATCH: i32 = 9;
 pub const CHROME_VERSION_MAJOR: i32 = 146;
 pub const CHROME_VERSION_MINOR: i32 = 0;
 pub const CHROME_VERSION_BUILD: i32 = 7680;
@@ -1404,11 +1404,13 @@ pub struct _cef_browser_settings_t {
     pub chrome_status_bubble: cef_state_t,
     #[doc = "\n Controls whether the Chrome zoom bubble will be shown when zooming. Only\n supported with Chrome style.\n"]
     pub chrome_zoom_bubble: cef_state_t,
+    #[doc = "\n Controls whether CDP accessibility tree serialization collapses off-screen\n nodes. When enabled, off-screen landmarks and headings are serialized as\n summaries (role + name only) and other off-screen nodes are pruned.\n This reduces snapshot size for AI agents using Playwright ariaSnapshot().\n WARNING: This collapses the CDP accessibility tree and disables CDP\n dynamic tree updates (nodesUpdated events). The DevTools Accessibility\n panel will show an incomplete tree. Platform screen readers (NVDA, JAWS,\n VoiceOver) are unaffected — they use a separate code path.\n Can also be configured at runtime using\n CefBrowserHost::SetAxViewportCollapse.\n"]
+    pub ax_viewport_collapse: cef_state_t,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of _cef_browser_settings_t"]
-        [::std::mem::size_of::<_cef_browser_settings_t>() - 168usize];
+        [::std::mem::size_of::<_cef_browser_settings_t>() - 172usize];
     ["Alignment of _cef_browser_settings_t"]
         [::std::mem::align_of::<_cef_browser_settings_t>() - 4usize];
     ["Offset of field: _cef_browser_settings_t::size"]
@@ -1469,6 +1471,8 @@ const _: () = {
         [::std::mem::offset_of!(_cef_browser_settings_t, chrome_status_bubble) - 160usize];
     ["Offset of field: _cef_browser_settings_t::chrome_zoom_bubble"]
         [::std::mem::offset_of!(_cef_browser_settings_t, chrome_zoom_bubble) - 164usize];
+    ["Offset of field: _cef_browser_settings_t::ax_viewport_collapse"]
+        [::std::mem::offset_of!(_cef_browser_settings_t, ax_viewport_collapse) - 168usize];
 };
 #[doc = "\n Browser initialization settings. Specify NULL or 0 to get the recommended\n default values. The consequences of using custom values may not be well\n tested. Many of these and other settings can also configured using command-\n line switches.\n"]
 pub type cef_browser_settings_t = _cef_browser_settings_t;
@@ -8782,10 +8786,14 @@ pub struct _cef_browser_host_t {
     pub get_runtime_style: ::std::option::Option<
         unsafe extern "C" fn(self_: *mut _cef_browser_host_t) -> cef_runtime_style_t,
     >,
+    #[doc = "\n Enable or disable CDP accessibility tree viewport collapse for this\n browser. When enabled, off-screen landmarks and headings are serialized as\n summaries and other off-screen nodes are pruned. Overrides the\n cef_browser_tSettings.ax_viewport_collapse value. If called on the UI\n thread the change will be applied immediately. Otherwise, the change will\n be applied asynchronously on the UI thread. WARNING: This collapses the\n CDP accessibility tree and disables CDP dynamic tree updates (nodesUpdated\n events). The DevTools Accessibility panel will show an incomplete tree.\n Platform screen readers (NVDA, JAWS, VoiceOver) are unaffected — they use\n a separate code path.\n"]
+    pub set_ax_viewport_collapse: ::std::option::Option<
+        unsafe extern "C" fn(self_: *mut _cef_browser_host_t, enabled: ::std::os::raw::c_int),
+    >,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _cef_browser_host_t"][::std::mem::size_of::<_cef_browser_host_t>() - 292usize];
+    ["Size of _cef_browser_host_t"][::std::mem::size_of::<_cef_browser_host_t>() - 296usize];
     ["Alignment of _cef_browser_host_t"][::std::mem::align_of::<_cef_browser_host_t>() - 4usize];
     ["Offset of field: _cef_browser_host_t::base"]
         [::std::mem::offset_of!(_cef_browser_host_t, base) - 0usize];
@@ -8925,6 +8933,8 @@ const _: () = {
         [::std::mem::offset_of!(_cef_browser_host_t, is_render_process_unresponsive) - 284usize];
     ["Offset of field: _cef_browser_host_t::get_runtime_style"]
         [::std::mem::offset_of!(_cef_browser_host_t, get_runtime_style) - 288usize];
+    ["Offset of field: _cef_browser_host_t::set_ax_viewport_collapse"]
+        [::std::mem::offset_of!(_cef_browser_host_t, set_ax_viewport_collapse) - 292usize];
 };
 #[doc = "\n Structure used to represent the browser process aspects of a browser. The\n functions of this structure can only be called in the browser process. They\n may be called on any thread in that process unless otherwise indicated in\n the comments.\n\n NOTE: This struct is allocated DLL-side.\n"]
 pub type cef_browser_host_t = _cef_browser_host_t;
