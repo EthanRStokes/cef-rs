@@ -69,8 +69,19 @@ fn main() -> anyhow::Result<()> {
                     "Using CEF path from environment: {}",
                     configured_path.display()
                 );
-                check_archive(&configured_path)?;
-                configured_path
+                match check_archive(&configured_path) {
+                    Ok(()) => configured_path,
+                    Err(error) => {
+                        let versioned_location = configured_path.join(&cef_version);
+                        println!(
+                            "CEF_PATH is invalid ({error}), downloading archive to: {}",
+                            versioned_location.display()
+                        );
+                        let resolved = resolve_cef_dir(&versioned_location)?;
+                        println!("Using downloaded CEF path: {}", resolved.display());
+                        resolved
+                    }
+                }
             }
         } else {
             let versioned_location = configured_path.join(&cef_version);
