@@ -30,7 +30,8 @@ fn main() -> anyhow::Result<()> {
             let version = platform.version(&cef_version)?;
 
             let archive = version.download_archive(location, false)?;
-            let extracted_dir = download_cef::extract_target_archive(&target, &archive, location, false)?;
+            let extracted_dir =
+                download_cef::extract_target_archive(&target, &archive, location, false)?;
             if extracted_dir != cef_dir {
                 return Err(anyhow::anyhow!(
                     "extracted dir {extracted_dir:?} does not match cef_dir {cef_dir:?}",
@@ -62,7 +63,10 @@ fn main() -> anyhow::Result<()> {
                 check_archive(&resolved)?;
                 resolved
             } else {
-                println!("Using CEF path from environment: {}", configured_path.display());
+                println!(
+                    "Using CEF path from environment: {}",
+                    configured_path.display()
+                );
                 check_archive(&configured_path)?;
                 configured_path
             }
