@@ -46,6 +46,29 @@ fn main() -> anyhow::Result<()> {
         Ok(cef_dir)
     };
 
+    let resolve_from_versioned = |configured_path: &Path| -> anyhow::Result<PathBuf> {
+        let versioned_location = configured_path.join(&cef_version);
+        let resolved = resolve_cef_dir(&versioned_location)?;
+        println!(
+            "Using versioned CEF path from environment: {}",
+            resolved.display()
+        );
+        check_archive(&resolved)?;
+        Ok(resolved)
+    };
+
+    let download_to_versioned =
+        |configured_path: &Path, reason: &str| -> anyhow::Result<PathBuf> {
+            let versioned_location = configured_path.join(&cef_version);
+            println!(
+                "{reason}, downloading archive to: {}",
+                versioned_location.display()
+            );
+            let resolved = resolve_cef_dir(&versioned_location)?;
+            println!("Using downloaded CEF path: {}", resolved.display());
+            Ok(resolved)
+        };
+
     let cef_dir = if env::var("FLATPAK").is_ok() {
         let cef_path = String::from("/usr/lib");
         println!("Using CEF path from FLATPAK: {cef_path}");
@@ -57,13 +80,7 @@ fn main() -> anyhow::Result<()> {
         if fs::exists(&configured_path)? {
             let versioned_location = configured_path.join(&cef_version);
             if fs::exists(&versioned_location)? {
-                let resolved = resolve_cef_dir(&versioned_location)?;
-                println!(
-                    "Using versioned CEF path from environment: {}",
-                    resolved.display()
-                );
-                check_archive(&resolved)?;
-                resolved
+                resolve_from_versioned(&configured_path)?
             } else {
                 println!(
                     "Using CEF path from environment: {}",
@@ -71,27 +88,14 @@ fn main() -> anyhow::Result<()> {
                 );
                 match check_archive(&configured_path) {
                     Ok(()) => configured_path,
-                    Err(error) => {
-                        let versioned_location = configured_path.join(&cef_version);
-                        println!(
-                            "CEF_PATH is invalid ({error}), downloading archive to: {}",
-                            versioned_location.display()
-                        );
-                        let resolved = resolve_cef_dir(&versioned_location)?;
-                        println!("Using downloaded CEF path: {}", resolved.display());
-                        resolved
-                    }
+                    Err(error) => download_to_versioned(
+                        &configured_path,
+                        &format!("CEF_PATH is invalid ({error})"),
+                    )?,
                 }
             }
         } else {
-            let versioned_location = configured_path.join(&cef_version);
-            println!(
-                "CEF_PATH does not exist, downloading archive to: {}",
-                versioned_location.display()
-            );
-            let resolved = resolve_cef_dir(&versioned_location)?;
-            println!("Using downloaded CEF path: {}", resolved.display());
-            resolved
+            download_to_versioned(&configured_path, "CEF_PATH does not exist")?
         }
     } else {
         let out_dir = PathBuf::from(env::var("OUT_DIR")?);
