@@ -103,6 +103,9 @@ fn main() -> anyhow::Result<()> {
 
     let cef_dir = cef_dir.to_string_lossy().into_owned();
 
+    // Re-run when the resolved CEF directory changes/deletes.
+    println!("cargo::rerun-if-changed={cef_dir}");
+
     println!("cargo::metadata=CEF_DIR={cef_dir}");
     println!("cargo::rustc-link-search=native={cef_dir}");
 
