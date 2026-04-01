@@ -45,7 +45,21 @@ pub fn get_cef_dir() -> Option<PathBuf> {
     match cef_path_env {
         Ok(cef_path) => {
             // Allow overriding the CEF path with environment variables.
-            PathBuf::from(cef_path).canonicalize().ok()
+            let configured_path = PathBuf::from(cef_path);
+            let cef_dir = format!("cef_{OS}_{ARCH}");
+            let package_version = env!("CARGO_PKG_VERSION");
+            let cef_version = package_version
+                .split_once('+')
+                .map(|(_, version)| version)
+                .unwrap_or(package_version);
+
+            [
+                configured_path.join(cef_version).join(&cef_dir),
+                configured_path,
+            ]
+            .into_iter()
+            .find_map(|path| fs::exists(&path).ok()?.then(|| path.canonicalize().ok()))
+            .flatten()
         }
         Err(_) => {
             let out_dir = PathBuf::from(env!("OUT_DIR"));
