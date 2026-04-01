@@ -13,18 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - improve CEF_PATH usage
 
-### Fixed
-
-- fix example
-- fix empty CEF_PATH
-
-### Other
-
-- fmt
-- cleanup
-- code review
-- fmt
-
 ## [145.6.1+145.0.28](https://github.com/tauri-apps/cef-rs/compare/cef-dll-sys-v145.6.0+145.0.28...cef-dll-sys-v145.6.1+145.0.28) - 2026-03-08
 
 ### Other
