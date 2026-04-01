@@ -17,7 +17,7 @@ fn main() -> anyhow::Result<()> {
     let cef_version = download_cef::default_version(&package_version);
 
     let check_archive = |path: &Path| -> anyhow::Result<()> {
-        download_cef::check_archive_json(&package_version, &path.display().to_string())?;
+        download_cef::check_archive_json(&package_version, &path.to_string_lossy())?;
         Ok(())
     };
 
@@ -32,9 +32,11 @@ fn main() -> anyhow::Result<()> {
             let archive = version.download_archive(location, false)?;
             let extracted_dir =
                 download_cef::extract_target_archive(&target, &archive, location, false)?;
-            if extracted_dir != cef_dir {
+            let extracted_dir_canonical = fs::canonicalize(&extracted_dir)?;
+            let cef_dir_canonical = fs::canonicalize(&cef_dir)?;
+            if extracted_dir_canonical != cef_dir_canonical {
                 return Err(anyhow::anyhow!(
-                    "extracted dir {extracted_dir:?} does not match cef_dir {cef_dir:?}",
+                    "extracted dir {extracted_dir_canonical:?} does not match cef_dir {cef_dir_canonical:?}",
                 ));
             }
 
@@ -85,7 +87,7 @@ fn main() -> anyhow::Result<()> {
         resolve_cef_dir(&out_dir)?
     };
 
-    let cef_dir = cef_dir.display().to_string();
+    let cef_dir = cef_dir.to_string_lossy().into_owned();
 
     println!("cargo::metadata=CEF_DIR={cef_dir}");
     println!("cargo::rustc-link-search=native={cef_dir}");
@@ -137,8 +139,8 @@ fn main() -> anyhow::Result<()> {
                 .define("PROJECT_ARCH", project_arch)
                 .define("USE_SANDBOX", sandbox)
                 .build()
-                .display()
-                .to_string();
+                .to_string_lossy()
+                .into_owned();
 
             println!("cargo::rustc-link-search=native={build_dir}/build/libcef_dll_wrapper");
             println!("cargo::rustc-link-lib=static=libcef_dll_wrapper");
@@ -153,8 +155,8 @@ fn main() -> anyhow::Result<()> {
                 .define("PROJECT_ARCH", project_arch)
                 .define("USE_SANDBOX", sandbox)
                 .build()
-                .display()
-                .to_string();
+                .to_string_lossy()
+                .into_owned();
             println!("cargo::rustc-link-search=native={build_dir}/build/libcef_dll_wrapper");
             println!("cargo::rustc-link-lib=static=cef_dll_wrapper");
         }
