@@ -57,17 +57,16 @@ fn main() -> anyhow::Result<()> {
         Ok(resolved)
     };
 
-    let download_to_versioned =
-        |configured_path: &Path, reason: &str| -> anyhow::Result<PathBuf> {
-            let versioned_location = configured_path.join(&cef_version);
-            println!(
-                "{reason}, downloading archive to: {}",
-                versioned_location.display()
-            );
-            let resolved = resolve_cef_dir(&versioned_location)?;
-            println!("Using downloaded CEF path: {}", resolved.display());
-            Ok(resolved)
-        };
+    let download_to_versioned = |configured_path: &Path, reason: &str| -> anyhow::Result<PathBuf> {
+        let versioned_location = configured_path.join(&cef_version);
+        println!(
+            "{reason}, downloading archive to: {}",
+            versioned_location.display()
+        );
+        let resolved = resolve_cef_dir(&versioned_location)?;
+        println!("Using downloaded CEF path: {}", resolved.display());
+        Ok(resolved)
+    };
 
     let cef_dir = if env::var("FLATPAK").is_ok() {
         let cef_path = String::from("/usr/lib");
