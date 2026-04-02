@@ -25,7 +25,7 @@ fn main() -> anyhow::Result<()> {
         let cef_dir = location.join(os_arch.to_string());
 
         if !fs::exists(&cef_dir)? {
-            let index = CefIndex::download()?;
+            let index = CefIndex::download_from(&download_cef::default_download_url())?;
             let platform = index.platform(&target)?;
             let version = platform.version(&cef_version)?;
 
