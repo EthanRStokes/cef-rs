@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [146.4.0+146.0.9](https://github.com/tauri-apps/cef-rs/compare/cef-dll-sys-v146.3.0+146.0.9...cef-dll-sys-v146.4.0+146.0.9) - 2026-04-02
+
+### Added
+
+- allow configuring CEF_DOWNLOAD_URL for build script
+
+### Other
+
+- Merge pull request #384 from tauri-apps/release-plz-2026-03-27T20-54-43Z
+- add missing rerun-if-changed instruction [skip ci]
+
 ## [146.3.0+146.0.9](https://github.com/tauri-apps/cef-rs/compare/cef-dll-sys-v146.2.0+146.0.9...cef-dll-sys-v146.3.0+146.0.9) - 2026-04-01
 
 ### Added
