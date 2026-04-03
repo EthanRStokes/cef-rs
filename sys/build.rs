@@ -25,11 +25,12 @@ fn main() -> anyhow::Result<()> {
         let cef_dir = location.join(os_arch.to_string());
 
         if !fs::exists(&cef_dir)? {
-            let index = CefIndex::download_from(&download_cef::default_download_url())?;
+            let download_url = download_cef::default_download_url();
+            let index = CefIndex::download_from(&download_url)?;
             let platform = index.platform(&target)?;
             let version = platform.version(&cef_version)?;
 
-            let archive = version.download_archive(location, false)?;
+            let archive = version.download_archive_from(&download_url, location, false)?;
             let extracted_dir =
                 download_cef::extract_target_archive(&target, &archive, location, false)?;
             let extracted_dir_canonical = fs::canonicalize(&extracted_dir)?;
