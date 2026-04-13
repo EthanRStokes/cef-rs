@@ -69,6 +69,8 @@ fn main() -> anyhow::Result<()> {
         Ok(resolved)
     };
 
+    let out_dir = PathBuf::from(env::var("OUT_DIR")?);
+
     let cef_dir = if env::var("FLATPAK").is_ok() {
         let cef_path = String::from("/usr/lib");
         println!("Using CEF path from FLATPAK: {cef_path}");
@@ -98,9 +100,21 @@ fn main() -> anyhow::Result<()> {
             download_to_versioned(&configured_path, "CEF_PATH does not exist")?
         }
     } else {
-        let out_dir = PathBuf::from(env::var("OUT_DIR")?);
         resolve_cef_dir(&out_dir)?
     };
+
+    // TODO: far from ideal, but there's no other way to get the target dir, see <https://github.com/rust-lang/cargo/issues/9661>
+    let target_dir = out_dir
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+
+    // On Windows and Linux the cef files usually have to be next to the main binary.
+    // TODO: Consider to put this behind a feature flag
+    copy_cef_runtime_files(&cef_dir, target_dir)?;
 
     let cef_dir = cef_dir.to_string_lossy().into_owned();
 
@@ -182,6 +196,28 @@ fn main() -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(not(feature = "dox"))]
+fn copy_directory(src: &std::path::Path, dest: &std::path::Path) -> Result<(), std::io::Error> {
+  std::fs::create_dir_all(dest)?;
+  for entry in std::fs::read_dir(src)? {
+    let entry = entry?;
+    if entry.path().is_file() {
+      std::fs::copy(entry.path(), dest.join(entry.file_name()))?;
+    }
+  }
+  Ok(())
+}
+
+#[cfg(not(feature = "dox"))]
+fn copy_cef_runtime_files(cef_dir: &std::path::Path, target_dir: &std::path::Path) -> Result<(), std::io::Error> {
+  copy_directory(cef_dir, target_dir)?;
+
+  const LOCALES_DIR: &str = "locales";
+  copy_directory(&cef_dir.join(LOCALES_DIR), &target_dir.join(LOCALES_DIR))?;
+
+  Ok(())
 }
 
 #[cfg(feature = "dox")]
