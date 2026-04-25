@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [147.0.0+147.0.9](https://github.com/tauri-apps/cef-rs/compare/cef-dll-sys-v146.7.0+146.0.12...cef-dll-sys-v147.0.0+147.0.9) - 2026-04-25
+
+### Other
+
+- update bindings
+
 ## [146.5.0+146.0.10](https://github.com/tauri-apps/cef-rs/compare/cef-dll-sys-v146.4.1+146.0.9...cef-dll-sys-v146.5.0+146.0.10) - 2026-04-05
 
 ### Other
