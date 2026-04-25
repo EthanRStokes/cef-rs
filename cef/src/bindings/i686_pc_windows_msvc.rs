@@ -11738,6 +11738,157 @@ impl Default for App {
     }
 }
 
+/// See [`_cef_component_update_callback_t`] for more documentation.
+#[derive(Clone, Debug)]
+pub struct ComponentUpdateCallback {
+    pub base: BaseRefCounted,
+    pub on_complete: ::std::option::Option<
+        unsafe extern "stdcall" fn(
+            self_: *mut _cef_component_update_callback_t,
+            component_id: *const cef_string_t,
+            error: cef_component_update_error_t,
+        ),
+    >,
+}
+impl ComponentUpdateCallback {
+    fn get_raw(&self) -> _cef_component_update_callback_t {
+        self.clone().into()
+    }
+}
+impl From<_cef_component_update_callback_t> for ComponentUpdateCallback {
+    fn from(value: _cef_component_update_callback_t) -> Self {
+        Self {
+            base: value.base.into(),
+            on_complete: value.on_complete,
+        }
+    }
+}
+impl From<ComponentUpdateCallback> for _cef_component_update_callback_t {
+    fn from(value: ComponentUpdateCallback) -> Self {
+        Self {
+            base: value.base.into(),
+            on_complete: value.on_complete,
+        }
+    }
+}
+impl Default for ComponentUpdateCallback {
+    fn default() -> Self {
+        unsafe { std::mem::zeroed() }
+    }
+}
+
+/// See [`_cef_component_t`] for more documentation.
+#[derive(Clone, Debug)]
+pub struct Component {
+    pub base: BaseRefCounted,
+    pub get_id: ::std::option::Option<
+        unsafe extern "stdcall" fn(self_: *mut _cef_component_t) -> cef_string_userfree_t,
+    >,
+    pub get_name: ::std::option::Option<
+        unsafe extern "stdcall" fn(self_: *mut _cef_component_t) -> cef_string_userfree_t,
+    >,
+    pub get_version: ::std::option::Option<
+        unsafe extern "stdcall" fn(self_: *mut _cef_component_t) -> cef_string_userfree_t,
+    >,
+    pub get_state: ::std::option::Option<
+        unsafe extern "stdcall" fn(self_: *mut _cef_component_t) -> cef_component_state_t,
+    >,
+}
+impl Component {
+    fn get_raw(&self) -> _cef_component_t {
+        self.clone().into()
+    }
+}
+impl From<_cef_component_t> for Component {
+    fn from(value: _cef_component_t) -> Self {
+        Self {
+            base: value.base.into(),
+            get_id: value.get_id,
+            get_name: value.get_name,
+            get_version: value.get_version,
+            get_state: value.get_state,
+        }
+    }
+}
+impl From<Component> for _cef_component_t {
+    fn from(value: Component) -> Self {
+        Self {
+            base: value.base.into(),
+            get_id: value.get_id,
+            get_name: value.get_name,
+            get_version: value.get_version,
+            get_state: value.get_state,
+        }
+    }
+}
+impl Default for Component {
+    fn default() -> Self {
+        unsafe { std::mem::zeroed() }
+    }
+}
+
+/// See [`_cef_component_updater_t`] for more documentation.
+#[derive(Clone, Debug)]
+pub struct ComponentUpdater {
+    pub base: BaseRefCounted,
+    pub get_component_count: ::std::option::Option<
+        unsafe extern "stdcall" fn(self_: *mut _cef_component_updater_t) -> usize,
+    >,
+    pub get_components: ::std::option::Option<
+        unsafe extern "stdcall" fn(
+            self_: *mut _cef_component_updater_t,
+            componentsCount: *mut usize,
+            components: *mut *mut _cef_component_t,
+        ),
+    >,
+    pub get_component_by_id: ::std::option::Option<
+        unsafe extern "stdcall" fn(
+            self_: *mut _cef_component_updater_t,
+            component_id: *const cef_string_t,
+        ) -> *mut _cef_component_t,
+    >,
+    pub update: ::std::option::Option<
+        unsafe extern "stdcall" fn(
+            self_: *mut _cef_component_updater_t,
+            component_id: *const cef_string_t,
+            priority: cef_component_update_priority_t,
+            callback: *mut _cef_component_update_callback_t,
+        ),
+    >,
+}
+impl ComponentUpdater {
+    fn get_raw(&self) -> _cef_component_updater_t {
+        self.clone().into()
+    }
+}
+impl From<_cef_component_updater_t> for ComponentUpdater {
+    fn from(value: _cef_component_updater_t) -> Self {
+        Self {
+            base: value.base.into(),
+            get_component_count: value.get_component_count,
+            get_components: value.get_components,
+            get_component_by_id: value.get_component_by_id,
+            update: value.update,
+        }
+    }
+}
+impl From<ComponentUpdater> for _cef_component_updater_t {
+    fn from(value: ComponentUpdater) -> Self {
+        Self {
+            base: value.base.into(),
+            get_component_count: value.get_component_count,
+            get_components: value.get_components,
+            get_component_by_id: value.get_component_by_id,
+            update: value.update,
+        }
+    }
+}
+impl Default for ComponentUpdater {
+    fn default() -> Self {
+        unsafe { std::mem::zeroed() }
+    }
+}
+
 /// See [`_cef_resource_bundle_t`] for more documentation.
 #[derive(Clone, Debug)]
 pub struct ResourceBundle {
@@ -15944,6 +16095,9 @@ impl Errorcode {
     #[doc = "See [`cef_errorcode_t::ERR_BLOCKED_IN_INCOGNITO_BY_ADMINISTRATOR`] for more documentation."]
     pub const BLOCKED_IN_INCOGNITO_BY_ADMINISTRATOR: Self =
         Self(cef_errorcode_t::ERR_BLOCKED_IN_INCOGNITO_BY_ADMINISTRATOR);
+    #[doc = "See [`cef_errorcode_t::ERR_LOCAL_NETWORK_PERMISSION_MISSING`] for more documentation."]
+    pub const LOCAL_NETWORK_PERMISSION_MISSING: Self =
+        Self(cef_errorcode_t::ERR_LOCAL_NETWORK_PERMISSION_MISSING);
     #[doc = "See [`cef_errorcode_t::ERR_CONNECTION_CLOSED`] for more documentation."]
     pub const CONNECTION_CLOSED: Self = Self(cef_errorcode_t::ERR_CONNECTION_CLOSED);
     #[doc = "See [`cef_errorcode_t::ERR_CONNECTION_RESET`] for more documentation."]
@@ -16618,6 +16772,9 @@ impl Resultcode {
     #[doc = "See [`cef_resultcode_t::CEF_RESULT_CODE_TERMINATED_BY_OTHER_PROCESS_ON_COMMIT_FAILURE`] for more documentation."]
     pub const TERMINATED_BY_OTHER_PROCESS_ON_COMMIT_FAILURE: Self =
         Self(cef_resultcode_t::CEF_RESULT_CODE_TERMINATED_BY_OTHER_PROCESS_ON_COMMIT_FAILURE);
+    #[doc = "See [`cef_resultcode_t::CEF_RESULT_CODE_INVALID_ISOLATED_BROWSER_PROCESS`] for more documentation."]
+    pub const INVALID_ISOLATED_BROWSER_PROCESS: Self =
+        Self(cef_resultcode_t::CEF_RESULT_CODE_INVALID_ISOLATED_BROWSER_PROCESS);
     #[doc = "See [`cef_resultcode_t::CEF_RESULT_CODE_CHROME_LAST`] for more documentation."]
     pub const CHROME_LAST: Self = Self(cef_resultcode_t::CEF_RESULT_CODE_CHROME_LAST);
     #[doc = "See [`cef_resultcode_t::CEF_RESULT_CODE_SANDBOX_FATAL_FIRST`] for more documentation."]
@@ -20212,9 +20369,9 @@ impl ChromePageActionIconType {
     #[doc = "See [`cef_chrome_page_action_icon_type_t::CEF_CPAIT_BOOKMARK_STAR`] for more documentation."]
     pub const BOOKMARK_STAR: Self =
         Self(cef_chrome_page_action_icon_type_t::CEF_CPAIT_BOOKMARK_STAR);
-    #[doc = "See [`cef_chrome_page_action_icon_type_t::CEF_CPAIT_CLICK_TO_CALL`] for more documentation."]
-    pub const CLICK_TO_CALL: Self =
-        Self(cef_chrome_page_action_icon_type_t::CEF_CPAIT_CLICK_TO_CALL);
+    #[doc = "See [`cef_chrome_page_action_icon_type_t::CEF_CPAIT_CLICK_TO_CALL_DEPRECATED`] for more documentation."]
+    pub const CLICK_TO_CALL_DEPRECATED: Self =
+        Self(cef_chrome_page_action_icon_type_t::CEF_CPAIT_CLICK_TO_CALL_DEPRECATED);
     #[doc = "See [`cef_chrome_page_action_icon_type_t::CEF_CPAIT_COOKIE_CONTROLS`] for more documentation."]
     pub const COOKIE_CONTROLS: Self =
         Self(cef_chrome_page_action_icon_type_t::CEF_CPAIT_COOKIE_CONTROLS);
@@ -20314,6 +20471,16 @@ impl ChromePageActionIconType {
     #[doc = "See [`cef_chrome_page_action_icon_type_t::CEF_CPAIT_JS_OPTIMIZATIONS`] for more documentation."]
     pub const JS_OPTIMIZATIONS: Self =
         Self(cef_chrome_page_action_icon_type_t::CEF_CPAIT_JS_OPTIMIZATIONS);
+    #[doc = "See [`cef_chrome_page_action_icon_type_t::CEF_CPAIT_RECORD_REPLAY`] for more documentation."]
+    pub const RECORD_REPLAY: Self =
+        Self(cef_chrome_page_action_icon_type_t::CEF_CPAIT_RECORD_REPLAY);
+    #[doc = "See [`cef_chrome_page_action_icon_type_t::CEF_CPAIT_INDIGO`] for more documentation."]
+    pub const INDIGO: Self = Self(cef_chrome_page_action_icon_type_t::CEF_CPAIT_INDIGO);
+    #[doc = "See [`cef_chrome_page_action_icon_type_t::CEF_CPAIT_FEDERATION_DEPRECATED`] for more documentation."]
+    pub const FEDERATION_DEPRECATED: Self =
+        Self(cef_chrome_page_action_icon_type_t::CEF_CPAIT_FEDERATION_DEPRECATED);
+    #[doc = "See [`cef_chrome_page_action_icon_type_t::CEF_CPAIT_GLIC`] for more documentation."]
+    pub const GLIC: Self = Self(cef_chrome_page_action_icon_type_t::CEF_CPAIT_GLIC);
     #[doc = "See [`cef_chrome_page_action_icon_type_t::CEF_CPAIT_NUM_VALUES`] for more documentation."]
     pub const NUM_VALUES: Self = Self(cef_chrome_page_action_icon_type_t::CEF_CPAIT_NUM_VALUES);
 }
@@ -20675,6 +20842,8 @@ impl PermissionRequestTypes {
     #[doc = "See [`cef_permission_request_types_t::CEF_PERMISSION_TYPE_LOOPBACK_NETWORK`] for more documentation."]
     pub const LOOPBACK_NETWORK: Self =
         Self(cef_permission_request_types_t::CEF_PERMISSION_TYPE_LOOPBACK_NETWORK);
+    #[doc = "See [`cef_permission_request_types_t::CEF_PERMISSION_TYPE_SENSORS`] for more documentation."]
+    pub const SENSORS: Self = Self(cef_permission_request_types_t::CEF_PERMISSION_TYPE_SENSORS);
 }
 impl PermissionRequestTypes {
     #[doc = "Get the raw integer representation."]
@@ -21153,6 +21322,171 @@ impl TaskType {
 impl Default for TaskType {
     fn default() -> Self {
         Self(cef_task_type_t::CEF_TASK_TYPE_UNKNOWN)
+    }
+}
+
+/// See [`cef_component_update_error_t`] for more documentation.
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct ComponentUpdateError(cef_component_update_error_t);
+impl AsRef<cef_component_update_error_t> for ComponentUpdateError {
+    fn as_ref(&self) -> &cef_component_update_error_t {
+        &self.0
+    }
+}
+impl AsMut<cef_component_update_error_t> for ComponentUpdateError {
+    fn as_mut(&mut self) -> &mut cef_component_update_error_t {
+        &mut self.0
+    }
+}
+impl From<cef_component_update_error_t> for ComponentUpdateError {
+    fn from(value: cef_component_update_error_t) -> Self {
+        Self(value)
+    }
+}
+impl From<ComponentUpdateError> for cef_component_update_error_t {
+    fn from(value: ComponentUpdateError) -> Self {
+        value.0
+    }
+}
+impl ComponentUpdateError {
+    #[doc = "See [`cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_NONE`] for more documentation."]
+    pub const NONE: Self = Self(cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_NONE);
+    #[doc = "See [`cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_UPDATE_IN_PROGRESS`] for more documentation."]
+    pub const UPDATE_IN_PROGRESS: Self =
+        Self(cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_UPDATE_IN_PROGRESS);
+    #[doc = "See [`cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_UPDATE_CANCELED`] for more documentation."]
+    pub const UPDATE_CANCELED: Self =
+        Self(cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_UPDATE_CANCELED);
+    #[doc = "See [`cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_RETRY_LATER`] for more documentation."]
+    pub const RETRY_LATER: Self =
+        Self(cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_RETRY_LATER);
+    #[doc = "See [`cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_SERVICE_ERROR`] for more documentation."]
+    pub const SERVICE_ERROR: Self =
+        Self(cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_SERVICE_ERROR);
+    #[doc = "See [`cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_UPDATE_CHECK_ERROR`] for more documentation."]
+    pub const UPDATE_CHECK_ERROR: Self =
+        Self(cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_UPDATE_CHECK_ERROR);
+    #[doc = "See [`cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_CRX_NOT_FOUND`] for more documentation."]
+    pub const CRX_NOT_FOUND: Self =
+        Self(cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_CRX_NOT_FOUND);
+    #[doc = "See [`cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_INVALID_ARGUMENT`] for more documentation."]
+    pub const INVALID_ARGUMENT: Self =
+        Self(cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_INVALID_ARGUMENT);
+    #[doc = "See [`cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_BAD_CRX_DATA_CALLBACK`] for more documentation."]
+    pub const BAD_CRX_DATA_CALLBACK: Self =
+        Self(cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_BAD_CRX_DATA_CALLBACK);
+}
+impl ComponentUpdateError {
+    #[doc = "Get the raw integer representation."]
+    pub fn get_raw(&self) -> i32 {
+        self.0 as i32
+    }
+}
+impl Default for ComponentUpdateError {
+    fn default() -> Self {
+        Self(cef_component_update_error_t::CEF_COMPONENT_UPDATE_ERROR_NONE)
+    }
+}
+
+/// See [`cef_component_update_priority_t`] for more documentation.
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct ComponentUpdatePriority(cef_component_update_priority_t);
+impl AsRef<cef_component_update_priority_t> for ComponentUpdatePriority {
+    fn as_ref(&self) -> &cef_component_update_priority_t {
+        &self.0
+    }
+}
+impl AsMut<cef_component_update_priority_t> for ComponentUpdatePriority {
+    fn as_mut(&mut self) -> &mut cef_component_update_priority_t {
+        &mut self.0
+    }
+}
+impl From<cef_component_update_priority_t> for ComponentUpdatePriority {
+    fn from(value: cef_component_update_priority_t) -> Self {
+        Self(value)
+    }
+}
+impl From<ComponentUpdatePriority> for cef_component_update_priority_t {
+    fn from(value: ComponentUpdatePriority) -> Self {
+        value.0
+    }
+}
+impl ComponentUpdatePriority {
+    #[doc = "See [`cef_component_update_priority_t::CEF_COMPONENT_UPDATE_PRIORITY_BACKGROUND`] for more documentation."]
+    pub const BACKGROUND: Self =
+        Self(cef_component_update_priority_t::CEF_COMPONENT_UPDATE_PRIORITY_BACKGROUND);
+    #[doc = "See [`cef_component_update_priority_t::CEF_COMPONENT_UPDATE_PRIORITY_FOREGROUND`] for more documentation."]
+    pub const FOREGROUND: Self =
+        Self(cef_component_update_priority_t::CEF_COMPONENT_UPDATE_PRIORITY_FOREGROUND);
+}
+impl ComponentUpdatePriority {
+    #[doc = "Get the raw integer representation."]
+    pub fn get_raw(&self) -> i32 {
+        self.0 as i32
+    }
+}
+impl Default for ComponentUpdatePriority {
+    fn default() -> Self {
+        Self(cef_component_update_priority_t::CEF_COMPONENT_UPDATE_PRIORITY_BACKGROUND)
+    }
+}
+
+/// See [`cef_component_state_t`] for more documentation.
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct ComponentState(cef_component_state_t);
+impl AsRef<cef_component_state_t> for ComponentState {
+    fn as_ref(&self) -> &cef_component_state_t {
+        &self.0
+    }
+}
+impl AsMut<cef_component_state_t> for ComponentState {
+    fn as_mut(&mut self) -> &mut cef_component_state_t {
+        &mut self.0
+    }
+}
+impl From<cef_component_state_t> for ComponentState {
+    fn from(value: cef_component_state_t) -> Self {
+        Self(value)
+    }
+}
+impl From<ComponentState> for cef_component_state_t {
+    fn from(value: ComponentState) -> Self {
+        value.0
+    }
+}
+impl ComponentState {
+    #[doc = "See [`cef_component_state_t::CEF_COMPONENT_STATE_NEW`] for more documentation."]
+    pub const NEW: Self = Self(cef_component_state_t::CEF_COMPONENT_STATE_NEW);
+    #[doc = "See [`cef_component_state_t::CEF_COMPONENT_STATE_CHECKING`] for more documentation."]
+    pub const CHECKING: Self = Self(cef_component_state_t::CEF_COMPONENT_STATE_CHECKING);
+    #[doc = "See [`cef_component_state_t::CEF_COMPONENT_STATE_CAN_UPDATE`] for more documentation."]
+    pub const CAN_UPDATE: Self = Self(cef_component_state_t::CEF_COMPONENT_STATE_CAN_UPDATE);
+    #[doc = "See [`cef_component_state_t::CEF_COMPONENT_STATE_DOWNLOADING`] for more documentation."]
+    pub const DOWNLOADING: Self = Self(cef_component_state_t::CEF_COMPONENT_STATE_DOWNLOADING);
+    #[doc = "See [`cef_component_state_t::CEF_COMPONENT_STATE_DECOMPRESSING`] for more documentation."]
+    pub const DECOMPRESSING: Self = Self(cef_component_state_t::CEF_COMPONENT_STATE_DECOMPRESSING);
+    #[doc = "See [`cef_component_state_t::CEF_COMPONENT_STATE_PATCHING`] for more documentation."]
+    pub const PATCHING: Self = Self(cef_component_state_t::CEF_COMPONENT_STATE_PATCHING);
+    #[doc = "See [`cef_component_state_t::CEF_COMPONENT_STATE_UPDATING`] for more documentation."]
+    pub const UPDATING: Self = Self(cef_component_state_t::CEF_COMPONENT_STATE_UPDATING);
+    #[doc = "See [`cef_component_state_t::CEF_COMPONENT_STATE_UPDATED`] for more documentation."]
+    pub const UPDATED: Self = Self(cef_component_state_t::CEF_COMPONENT_STATE_UPDATED);
+    #[doc = "See [`cef_component_state_t::CEF_COMPONENT_STATE_UP_TO_DATE`] for more documentation."]
+    pub const UP_TO_DATE: Self = Self(cef_component_state_t::CEF_COMPONENT_STATE_UP_TO_DATE);
+    #[doc = "See [`cef_component_state_t::CEF_COMPONENT_STATE_UPDATE_ERROR`] for more documentation."]
+    pub const UPDATE_ERROR: Self = Self(cef_component_state_t::CEF_COMPONENT_STATE_UPDATE_ERROR);
+    #[doc = "See [`cef_component_state_t::CEF_COMPONENT_STATE_RUN`] for more documentation."]
+    pub const RUN: Self = Self(cef_component_state_t::CEF_COMPONENT_STATE_RUN);
+}
+impl ComponentState {
+    #[doc = "Get the raw integer representation."]
+    pub fn get_raw(&self) -> i32 {
+        self.0 as i32
+    }
+}
+impl Default for ComponentState {
+    fn default() -> Self {
+        Self(cef_component_state_t::CEF_COMPONENT_STATE_NEW)
     }
 }
 
@@ -23043,6 +23377,9 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorInfoBarButtonIconDisabled`] for more documentation."]
     pub const COLOR_INFO_BAR_BUTTON_ICON_DISABLED: Self =
         Self(cef_color_id_t::CEF_ColorInfoBarButtonIconDisabled);
+    #[doc = "See [`cef_color_id_t::CEF_ColorInfoBarButtonIconHovered`] for more documentation."]
+    pub const COLOR_INFO_BAR_BUTTON_ICON_HOVERED: Self =
+        Self(cef_color_id_t::CEF_ColorInfoBarButtonIconHovered);
     #[doc = "See [`cef_color_id_t::CEF_ColorInfoBarContentAreaSeparator`] for more documentation."]
     pub const COLOR_INFO_BAR_CONTENT_AREA_SEPARATOR: Self =
         Self(cef_color_id_t::CEF_ColorInfoBarContentAreaSeparator);
@@ -24000,6 +24337,30 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorProfilesReauthDialogBorder`] for more documentation."]
     pub const COLOR_PROFILES_REAUTH_DIALOG_BORDER: Self =
         Self(cef_color_id_t::CEF_ColorProfilesReauthDialogBorder);
+    #[doc = "See [`cef_color_id_t::CEF_ColorProjectsPanelBackground`] for more documentation."]
+    pub const COLOR_PROJECTS_PANEL_BACKGROUND: Self =
+        Self(cef_color_id_t::CEF_ColorProjectsPanelBackground);
+    #[doc = "See [`cef_color_id_t::CEF_ColorProjectsPanelButtonDisabledIcon`] for more documentation."]
+    pub const COLOR_PROJECTS_PANEL_BUTTON_DISABLED_ICON: Self =
+        Self(cef_color_id_t::CEF_ColorProjectsPanelButtonDisabledIcon);
+    #[doc = "See [`cef_color_id_t::CEF_ColorProjectsPanelButtonHoverBackground`] for more documentation."]
+    pub const COLOR_PROJECTS_PANEL_BUTTON_HOVER_BACKGROUND: Self =
+        Self(cef_color_id_t::CEF_ColorProjectsPanelButtonHoverBackground);
+    #[doc = "See [`cef_color_id_t::CEF_ColorProjectsPanelButtonIcon`] for more documentation."]
+    pub const COLOR_PROJECTS_PANEL_BUTTON_ICON: Self =
+        Self(cef_color_id_t::CEF_ColorProjectsPanelButtonIcon);
+    #[doc = "See [`cef_color_id_t::CEF_ColorProjectsPanelListsSeparator`] for more documentation."]
+    pub const COLOR_PROJECTS_PANEL_LISTS_SEPARATOR: Self =
+        Self(cef_color_id_t::CEF_ColorProjectsPanelListsSeparator);
+    #[doc = "See [`cef_color_id_t::CEF_ColorProjectsPanelNoTabGroupsText`] for more documentation."]
+    pub const COLOR_PROJECTS_PANEL_NO_TAB_GROUPS_TEXT: Self =
+        Self(cef_color_id_t::CEF_ColorProjectsPanelNoTabGroupsText);
+    #[doc = "See [`cef_color_id_t::CEF_ColorProjectsPanelTabGroupsDragPlaceholder`] for more documentation."]
+    pub const COLOR_PROJECTS_PANEL_TAB_GROUPS_DRAG_PLACEHOLDER: Self =
+        Self(cef_color_id_t::CEF_ColorProjectsPanelTabGroupsDragPlaceholder);
+    #[doc = "See [`cef_color_id_t::CEF_ColorProjectsPanelTabGroupsDropIndicator`] for more documentation."]
+    pub const COLOR_PROJECTS_PANEL_TAB_GROUPS_DROP_INDICATOR: Self =
+        Self(cef_color_id_t::CEF_ColorProjectsPanelTabGroupsDropIndicator);
     #[doc = "See [`cef_color_id_t::CEF_ColorPwaBackground`] for more documentation."]
     pub const COLOR_PWA_BACKGROUND: Self = Self(cef_color_id_t::CEF_ColorPwaBackground);
     #[doc = "See [`cef_color_id_t::CEF_ColorPwaMenuButtonIcon`] for more documentation."]
@@ -24058,15 +24419,12 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingBackgroundHighContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_BACKGROUND_HIGH_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingBackgroundHighContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingBackgroundLowContrast`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_BACKGROUND_LOW_CONTRAST: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingBackgroundLowContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingBackgroundSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_BACKGROUND_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingBackgroundSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingBackgroundSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_BACKGROUND_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingBackgroundSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingBackgroundLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_BACKGROUND_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingBackgroundLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingBackgroundLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_BACKGROUND_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingBackgroundLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingCurrentReadAloudHighlight`] for more documentation."]
     pub const COLOR_READ_ANYTHING_CURRENT_READ_ALOUD_HIGHLIGHT: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingCurrentReadAloudHighlight);
@@ -24085,15 +24443,12 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingCurrentReadAloudHighlightHighContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_CURRENT_READ_ALOUD_HIGHLIGHT_HIGH_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingCurrentReadAloudHighlightHighContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingCurrentReadAloudHighlightLowContrast`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_CURRENT_READ_ALOUD_HIGHLIGHT_LOW_CONTRAST: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingCurrentReadAloudHighlightLowContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingCurrentReadAloudHighlightSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_CURRENT_READ_ALOUD_HIGHLIGHT_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingCurrentReadAloudHighlightSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingCurrentReadAloudHighlightSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_CURRENT_READ_ALOUD_HIGHLIGHT_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingCurrentReadAloudHighlightSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingCurrentReadAloudHighlightLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_CURRENT_READ_ALOUD_HIGHLIGHT_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingCurrentReadAloudHighlightLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingCurrentReadAloudHighlightLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_CURRENT_READ_ALOUD_HIGHLIGHT_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingCurrentReadAloudHighlightLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingFocusRingBackground`] for more documentation."]
     pub const COLOR_READ_ANYTHING_FOCUS_RING_BACKGROUND: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingFocusRingBackground);
@@ -24112,15 +24467,12 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingFocusRingBackgroundHighContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_FOCUS_RING_BACKGROUND_HIGH_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingFocusRingBackgroundHighContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingFocusRingBackgroundLowContrast`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_FOCUS_RING_BACKGROUND_LOW_CONTRAST: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingFocusRingBackgroundLowContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingFocusRingBackgroundSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_FOCUS_RING_BACKGROUND_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingFocusRingBackgroundSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingFocusRingBackgroundSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_FOCUS_RING_BACKGROUND_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingFocusRingBackgroundSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingFocusRingBackgroundLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_FOCUS_RING_BACKGROUND_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingFocusRingBackgroundLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingFocusRingBackgroundLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_FOCUS_RING_BACKGROUND_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingFocusRingBackgroundLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingForeground`] for more documentation."]
     pub const COLOR_READ_ANYTHING_FOREGROUND: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingForeground);
@@ -24139,15 +24491,12 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingForegroundHighContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_FOREGROUND_HIGH_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingForegroundHighContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingForegroundLowContrast`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_FOREGROUND_LOW_CONTRAST: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingForegroundLowContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingForegroundSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_FOREGROUND_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingForegroundSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingForegroundSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_FOREGROUND_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingForegroundSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingForegroundLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_FOREGROUND_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingForegroundLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingForegroundLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_FOREGROUND_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingForegroundLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLineFocus`] for more documentation."]
     pub const COLOR_READ_ANYTHING_LINE_FOCUS: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingLineFocus);
@@ -24166,18 +24515,15 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLineFocusHighContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_LINE_FOCUS_HIGH_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingLineFocusHighContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLineFocusLowContrast`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_LINE_FOCUS_LOW_CONTRAST: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingLineFocusLowContrast);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLineFocusScrim`] for more documentation."]
     pub const COLOR_READ_ANYTHING_LINE_FOCUS_SCRIM: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingLineFocusScrim);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLineFocusSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_LINE_FOCUS_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingLineFocusSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLineFocusSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_LINE_FOCUS_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingLineFocusSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLineFocusLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_LINE_FOCUS_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingLineFocusLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLineFocusLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_LINE_FOCUS_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingLineFocusLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingSeparator`] for more documentation."]
     pub const COLOR_READ_ANYTHING_SEPARATOR: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingSeparator);
@@ -24196,15 +24542,12 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingSeparatorHighContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_SEPARATOR_HIGH_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingSeparatorHighContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingSeparatorLowContrast`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_SEPARATOR_LOW_CONTRAST: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingSeparatorLowContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingSeparatorSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_SEPARATOR_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingSeparatorSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingSeparatorSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_SEPARATOR_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingSeparatorSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingSeparatorLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_SEPARATOR_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingSeparatorLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingSeparatorLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_SEPARATOR_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingSeparatorLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingDropdownBackground`] for more documentation."]
     pub const COLOR_READ_ANYTHING_DROPDOWN_BACKGROUND: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingDropdownBackground);
@@ -24223,15 +24566,12 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingDropdownBackgroundHighContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_DROPDOWN_BACKGROUND_HIGH_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingDropdownBackgroundHighContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingDropdownBackgroundLowContrast`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_DROPDOWN_BACKGROUND_LOW_CONTRAST: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingDropdownBackgroundLowContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingDropdownBackgroundSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_DROPDOWN_BACKGROUND_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingDropdownBackgroundSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingDropdownBackgroundSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_DROPDOWN_BACKGROUND_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingDropdownBackgroundSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingDropdownBackgroundLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_DROPDOWN_BACKGROUND_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingDropdownBackgroundLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingDropdownBackgroundLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_DROPDOWN_BACKGROUND_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingDropdownBackgroundLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingDropdownSelected`] for more documentation."]
     pub const COLOR_READ_ANYTHING_DROPDOWN_SELECTED: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingDropdownSelected);
@@ -24250,15 +24590,12 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingDropdownSelectedHighContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_DROPDOWN_SELECTED_HIGH_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingDropdownSelectedHighContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingDropdownSelectedLowContrast`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_DROPDOWN_SELECTED_LOW_CONTRAST: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingDropdownSelectedLowContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingDropdownSelectedSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_DROPDOWN_SELECTED_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingDropdownSelectedSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingDropdownSelectedSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_DROPDOWN_SELECTED_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingDropdownSelectedSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingDropdownSelectedLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_DROPDOWN_SELECTED_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingDropdownSelectedLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingDropdownSelectedLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_DROPDOWN_SELECTED_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingDropdownSelectedLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingTextSelection`] for more documentation."]
     pub const COLOR_READ_ANYTHING_TEXT_SELECTION: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingTextSelection);
@@ -24277,15 +24614,12 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingTextSelectionHighContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_TEXT_SELECTION_HIGH_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingTextSelectionHighContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingTextSelectionLowContrast`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_TEXT_SELECTION_LOW_CONTRAST: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingTextSelectionLowContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingTextSelectionSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_TEXT_SELECTION_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingTextSelectionSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingTextSelectionSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_TEXT_SELECTION_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingTextSelectionSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingTextSelectionLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TEXT_SELECTION_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingTextSelectionLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingTextSelectionLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TEXT_SELECTION_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingTextSelectionLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLinkDefault`] for more documentation."]
     pub const COLOR_READ_ANYTHING_LINK_DEFAULT: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingLinkDefault);
@@ -24304,15 +24638,12 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLinkDefaultHighContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_LINK_DEFAULT_HIGH_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingLinkDefaultHighContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLinkDefaultLowContrast`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_LINK_DEFAULT_LOW_CONTRAST: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingLinkDefaultLowContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLinkDefaultSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_LINK_DEFAULT_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingLinkDefaultSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLinkDefaultSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_LINK_DEFAULT_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingLinkDefaultSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLinkDefaultLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_LINK_DEFAULT_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingLinkDefaultLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLinkDefaultLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_LINK_DEFAULT_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingLinkDefaultLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLinkVisited`] for more documentation."]
     pub const COLOR_READ_ANYTHING_LINK_VISITED: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingLinkVisited);
@@ -24331,15 +24662,12 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLinkVisitedHighContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_LINK_VISITED_HIGH_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingLinkVisitedHighContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLinkVisitedLowContrast`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_LINK_VISITED_LOW_CONTRAST: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingLinkVisitedLowContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLinkVisitedSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_LINK_VISITED_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingLinkVisitedSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLinkVisitedSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_LINK_VISITED_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingLinkVisitedSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLinkVisitedLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_LINK_VISITED_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingLinkVisitedLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingLinkVisitedLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_LINK_VISITED_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingLinkVisitedLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlight`] for more documentation."]
     pub const COLOR_READ_ANYTHING_PREVIOUS_READ_ALOUD_HIGHLIGHT: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlight);
@@ -24358,15 +24686,12 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlightHighContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_PREVIOUS_READ_ALOUD_HIGHLIGHT_HIGH_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlightHighContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlightLowContrast`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_PREVIOUS_READ_ALOUD_HIGHLIGHT_LOW_CONTRAST: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlightLowContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlightSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_PREVIOUS_READ_ALOUD_HIGHLIGHT_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlightSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlightSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_PREVIOUS_READ_ALOUD_HIGHLIGHT_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlightSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlightLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_PREVIOUS_READ_ALOUD_HIGHLIGHT_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlightLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlightLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_PREVIOUS_READ_ALOUD_HIGHLIGHT_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingPreviousReadAloudHighlightLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackground`] for more documentation."]
     pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackground);
@@ -24385,15 +24710,12 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundHighContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND_HIGH_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundHighContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundLowContrast`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND_LOW_CONTRAST: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundLowContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_BACKGROUND_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerBackgroundLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIcon`] for more documentation."]
     pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIcon);
@@ -24412,15 +24734,12 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconHighContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON_HIGH_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconHighContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconLowContrast`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON_LOW_CONTRAST: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconLowContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_PLAYER_ICON_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioPlayerIconLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIcon`] for more documentation."]
     pub const COLOR_READ_ANYTHING_TOOLBAR_ICON: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIcon);
@@ -24442,12 +24761,84 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconLowContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_LOW_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconLowContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconLowContrastDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackground`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_HOVER_BACKGROUND: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackground);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackgroundBlue`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_HOVER_BACKGROUND_BLUE: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackgroundBlue);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackgroundDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_HOVER_BACKGROUND_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackgroundDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackgroundLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_HOVER_BACKGROUND_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackgroundLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackgroundYellow`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_HOVER_BACKGROUND_YELLOW: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackgroundYellow);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackgroundHighContrast`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_HOVER_BACKGROUND_HIGH_CONTRAST: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackgroundHighContrast);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackgroundLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_HOVER_BACKGROUND_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackgroundLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackgroundLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_ICON_HOVER_BACKGROUND_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarIconHoverBackgroundLowContrastDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutline`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_FOCUS_OUTLINE: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutline);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutlineBlue`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_FOCUS_OUTLINE_BLUE: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutlineBlue);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutlineDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_FOCUS_OUTLINE_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutlineDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutlineLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_FOCUS_OUTLINE_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutlineLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutlineYellow`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_FOCUS_OUTLINE_YELLOW: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutlineYellow);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutlineHighContrast`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_FOCUS_OUTLINE_HIGH_CONTRAST: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutlineHighContrast);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutlineLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_FOCUS_OUTLINE_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutlineLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutlineLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_TOOLBAR_FOCUS_OUTLINE_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingToolbarFocusOutlineLowContrastDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutline`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_ON_AUDIO_PLAYER_FOCUS_OUTLINE: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutline);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutlineBlue`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_ON_AUDIO_PLAYER_FOCUS_OUTLINE_BLUE: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutlineBlue);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutlineDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_ON_AUDIO_PLAYER_FOCUS_OUTLINE_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutlineDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutlineLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_ON_AUDIO_PLAYER_FOCUS_OUTLINE_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutlineLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutlineYellow`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_ON_AUDIO_PLAYER_FOCUS_OUTLINE_YELLOW: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutlineYellow);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutlineHighContrast`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_ON_AUDIO_PLAYER_FOCUS_OUTLINE_HIGH_CONTRAST: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutlineHighContrast);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutlineLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_ON_AUDIO_PLAYER_FOCUS_OUTLINE_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutlineLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutlineLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_ON_AUDIO_PLAYER_FOCUS_OUTLINE_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingOnAudioPlayerFocusOutlineLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIcon`] for more documentation."]
     pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIcon);
@@ -24466,15 +24857,12 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconHighContrast`] for more documentation."]
     pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON_HIGH_CONTRAST: Self =
         Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconHighContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconLowContrast`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON_LOW_CONTRAST: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconLowContrast);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconSepiaLight`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON_SEPIA_LIGHT: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconSepiaLight);
-    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconSepiaDark`] for more documentation."]
-    pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON_SEPIA_DARK: Self =
-        Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconSepiaDark);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconLowContrastLight`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON_LOW_CONTRAST_LIGHT: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconLowContrastLight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconLowContrastDark`] for more documentation."]
+    pub const COLOR_READ_ANYTHING_AUDIO_CONTROLS_ICON_LOW_CONTRAST_DARK: Self =
+        Self(cef_color_id_t::CEF_ColorReadAnythingAudioControlsIconLowContrastDark);
     #[doc = "See [`cef_color_id_t::CEF_ColorSearchboxAnswerIconBackground`] for more documentation."]
     pub const COLOR_SEARCHBOX_ANSWER_ICON_BACKGROUND: Self =
         Self(cef_color_id_t::CEF_ColorSearchboxAnswerIconBackground);
@@ -25302,6 +25690,9 @@ impl ColorId {
         Self(cef_color_id_t::CEF_ColorToolbarButtonIconPressed);
     #[doc = "See [`cef_color_id_t::CEF_ColorToolbarButtonText`] for more documentation."]
     pub const COLOR_TOOLBAR_BUTTON_TEXT: Self = Self(cef_color_id_t::CEF_ColorToolbarButtonText);
+    #[doc = "See [`cef_color_id_t::CEF_ColorToolbarCloseButtonBackgroundDefault`] for more documentation."]
+    pub const COLOR_TOOLBAR_CLOSE_BUTTON_BACKGROUND_DEFAULT: Self =
+        Self(cef_color_id_t::CEF_ColorToolbarCloseButtonBackgroundDefault);
     #[doc = "See [`cef_color_id_t::CEF_ColorToolbarContentAreaSeparator`] for more documentation."]
     pub const COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR: Self =
         Self(cef_color_id_t::CEF_ColorToolbarContentAreaSeparator);
@@ -25314,6 +25705,9 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorToolbarFeaturePromoHighlight`] for more documentation."]
     pub const COLOR_TOOLBAR_FEATURE_PROMO_HIGHLIGHT: Self =
         Self(cef_color_id_t::CEF_ColorToolbarFeaturePromoHighlight);
+    #[doc = "See [`cef_color_id_t::CEF_ColorToolbarGlicButtonBackgroundDefault`] for more documentation."]
+    pub const COLOR_TOOLBAR_GLIC_BUTTON_BACKGROUND_DEFAULT: Self =
+        Self(cef_color_id_t::CEF_ColorToolbarGlicButtonBackgroundDefault);
     #[doc = "See [`cef_color_id_t::CEF_ColorToolbarIconContainerBorder`] for more documentation."]
     pub const COLOR_TOOLBAR_ICON_CONTAINER_BORDER: Self =
         Self(cef_color_id_t::CEF_ColorToolbarIconContainerBorder);
@@ -25352,6 +25746,9 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorVerticalTabStripShadow`] for more documentation."]
     pub const COLOR_VERTICAL_TAB_STRIP_SHADOW: Self =
         Self(cef_color_id_t::CEF_ColorVerticalTabStripShadow);
+    #[doc = "See [`cef_color_id_t::CEF_ColorVerticalTabPinnedOutline`] for more documentation."]
+    pub const COLOR_VERTICAL_TAB_PINNED_OUTLINE: Self =
+        Self(cef_color_id_t::CEF_ColorVerticalTabPinnedOutline);
     #[doc = "See [`cef_color_id_t::CEF_ColorWebAuthnHoverButtonForeground`] for more documentation."]
     pub const COLOR_WEB_AUTHN_HOVER_BUTTON_FOREGROUND: Self =
         Self(cef_color_id_t::CEF_ColorWebAuthnHoverButtonForeground);
@@ -25443,6 +25840,9 @@ impl ColorId {
     #[doc = "See [`cef_color_id_t::CEF_ColorCaptionButtonForegroundInactive`] for more documentation."]
     pub const COLOR_CAPTION_BUTTON_FOREGROUND_INACTIVE: Self =
         Self(cef_color_id_t::CEF_ColorCaptionButtonForegroundInactive);
+    #[doc = "See [`cef_color_id_t::CEF_ColorCaptionButtonOnToolbar`] for more documentation."]
+    pub const COLOR_CAPTION_BUTTON_ON_TOOLBAR: Self =
+        Self(cef_color_id_t::CEF_ColorCaptionButtonOnToolbar);
     #[doc = "See [`cef_color_id_t::CEF_ColorCaptionCloseButtonBackgroundHovered`] for more documentation."]
     pub const COLOR_CAPTION_CLOSE_BUTTON_BACKGROUND_HOVERED: Self =
         Self(cef_color_id_t::CEF_ColorCaptionCloseButtonBackgroundHovered);
@@ -27579,6 +27979,18 @@ pub fn set_nestable_tasks_allowed(allowed: ::std::os::raw::c_int) {
     unsafe {
         let arg_allowed = allowed;
         cef_set_nestable_tasks_allowed(arg_allowed);
+    }
+}
+
+/// See [`cef_component_updater_get`] for more documentation.
+pub fn component_updater_get() -> Option<ComponentUpdater> {
+    unsafe {
+        let result = cef_component_updater_get();
+        if result.is_null() {
+            None
+        } else {
+            Some(result.wrap_result())
+        }
     }
 }
 
