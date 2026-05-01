@@ -9,7 +9,7 @@ use std::{
     sync::Arc,
 };
 
-pub trait Delegate: Send {
+pub trait Delegate: Send + Sync {
     fn on_before_command_line_processing(
         &self,
         _app: &Arc<ClientAppBrowser>,
