@@ -2,11 +2,11 @@
 
 use bzip2::bufread::BzDecoder;
 use clap::ValueEnum;
+use fs_err::File;
 use regex::Regex;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use sha1_smol::Sha1;
-use fs_err::File;
 use std::{
     collections::HashMap,
     env,
