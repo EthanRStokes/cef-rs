@@ -141,7 +141,6 @@ fn main() -> anyhow::Result<()> {
         "linux" => {
             // On Windows and Linux the cef files usually have to be next to the main binary.
             // On macOS it's more complicated so we'll leave it to tools like tauri-cli for now.
-            // TODO: Consider to put this behind a feature flag
             copy_cef_runtime_files(&cef_dir, target_dir)?;
 
             println!("cargo::rustc-link-lib=dylib=cef");
@@ -149,7 +148,6 @@ fn main() -> anyhow::Result<()> {
         "windows" => {
             // On Windows and Linux the cef files usually have to be next to the main binary.
             // On macOS it's more complicated so we'll leave it to tools like tauri-cli for now.
-            // TODO: Consider to put this behind a feature flag
             copy_cef_runtime_files(&cef_dir, target_dir)?;
 
             let sdk_libs = [
