@@ -17,21 +17,25 @@ pub const CEF_API_VERSION_14000: i32 = 14000;
 pub const CEF_API_VERSION_14100: i32 = 14100;
 pub const CEF_API_VERSION_14200: i32 = 14200;
 pub const CEF_API_VERSION_14300: i32 = 14300;
+pub const CEF_API_VERSION_14400: i32 = 14400;
+pub const CEF_API_VERSION_14500: i32 = 14500;
+pub const CEF_API_VERSION_14600: i32 = 14600;
+pub const CEF_API_VERSION_14700: i32 = 14700;
 pub const CEF_API_VERSION_999998: i32 = 999998;
 pub const CEF_API_VERSION_999999: i32 = 999999;
 pub const CEF_API_VERSION_MIN: i32 = 13300;
-pub const CEF_API_VERSION_LAST: i32 = 14300;
+pub const CEF_API_VERSION_LAST: i32 = 14700;
 pub const CEF_API_VERSION_EXPERIMENTAL: i32 = 999999;
 pub const CEF_API_VERSION_NEXT: i32 = 999998;
 pub const CEF_API_VERSION: i32 = 999999;
-pub const CEF_VERSION: &[u8; 42] = b"143.0.14+gdd46a37+chromium-143.0.7499.193\0";
-pub const CEF_VERSION_MAJOR: i32 = 143;
+pub const CEF_VERSION: &[u8; 42] = b"147.0.10+gd58e84d+chromium-147.0.7727.118\0";
+pub const CEF_VERSION_MAJOR: i32 = 147;
 pub const CEF_VERSION_MINOR: i32 = 0;
-pub const CEF_VERSION_PATCH: i32 = 14;
-pub const CHROME_VERSION_MAJOR: i32 = 143;
+pub const CEF_VERSION_PATCH: i32 = 10;
+pub const CHROME_VERSION_MAJOR: i32 = 147;
 pub const CHROME_VERSION_MINOR: i32 = 0;
-pub const CHROME_VERSION_BUILD: i32 = 7499;
-pub const CHROME_VERSION_PATCH: i32 = 193;
+pub const CHROME_VERSION_BUILD: i32 = 7727;
+pub const CHROME_VERSION_PATCH: i32 = 118;
 unsafe extern "C" {
     #[doc = "\n Load the CEF library at the specified |path|. Returns true (1) on\n success and false (0) on failure.\n"]
     pub fn cef_load_library(path: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
@@ -41,6 +45,16 @@ unsafe extern "C" {
     pub fn cef_unload_library() -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
+    #[doc = "\n Load the CEF library from the expected app bundle location relative to the\n executable. Pass |helper| as 1 for helper processes or 0 for the main\n process. Returns an opaque handle on success or NULL on failure. The\n returned handle should be passed to cef_scoped_library_loader_free()\n immediately before process termination. This is a wrapper around\n CefScopedLibraryLoader for C API users.\n"]
+    pub fn cef_scoped_library_loader_create(
+        helper: ::std::os::raw::c_int,
+    ) -> *mut ::std::os::raw::c_void;
+}
+unsafe extern "C" {
+    #[doc = "\n Destroy the specified library loader handle created by\n cef_scoped_library_loader_create().\n"]
+    pub fn cef_scoped_library_loader_free(loader: *mut ::std::os::raw::c_void);
+}
+unsafe extern "C" {
     #[doc = "\n Initialize the sandbox for this process. Returns the sandbox context\n handle on success or NULL on failure. The returned handle should be\n passed to cef_sandbox_destroy() immediately before process termination.\n"]
     pub fn cef_sandbox_initialize(
         argc: ::std::os::raw::c_int,
@@ -48,11 +62,22 @@ unsafe extern "C" {
     ) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
-    #[doc = "\n Destroy the specified sandbox context handle.\n"]
+    #[doc = "\n Destroy the specified sandbox context handle created by\n cef_sandbox_initialize().\n"]
     pub fn cef_sandbox_destroy(sandbox_context: *mut ::std::os::raw::c_void);
 }
 unsafe extern "C" {
-    #[doc = "\n Configures the CEF API version and returns API hashes for the libcef\n library. The returned string is owned by the library and should not be\n freed. The |version| parameter should be CEF_API_VERSION and any changes to\n this value will be ignored after the first call to this method. The |entry|\n parameter describes which hash value will be returned:\n\n 0 - CEF_API_HASH_PLATFORM\n 1 - CEF_API_HASH_UNIVERSAL (deprecated, same as CEF_API_HASH_PLATFORM)\n 2 - CEF_COMMIT_HASH (from cef_version.h)\n"]
+    #[doc = "\n Initialize the scoped sandbox for this process. Returns an opaque handle\n on success or NULL on failure. The returned handle should be passed to\n cef_scoped_sandbox_destroy() immediately before process termination.\n This is a wrapper around CefScopedSandboxContext for C API users.\n"]
+    pub fn cef_scoped_sandbox_initialize(
+        argc: ::std::os::raw::c_int,
+        argv: *mut *mut ::std::os::raw::c_char,
+    ) -> *mut ::std::os::raw::c_void;
+}
+unsafe extern "C" {
+    #[doc = "\n Destroy the specified scoped sandbox handle created by\n cef_scoped_sandbox_initialize().\n"]
+    pub fn cef_scoped_sandbox_destroy(sandbox_context: *mut ::std::os::raw::c_void);
+}
+unsafe extern "C" {
+    #[doc = "\n Configures the CEF API version and returns API hashes for the libcef\n library. The returned string is owned by the library and should not be\n freed. The |version| parameter should be CEF_API_VERSION and any changes to\n this value will be ignored after the first call to this method. The |entry|\n parameter describes which hash value will be returned:\n\n 0 - CEF_API_HASH_PLATFORM\n 1 - CEF_API_HASH_UNIVERSAL (deprecated, same as CEF_API_HASH_PLATFORM)\n 2 - CEF_COMMIT_HASH (from cef_version.h)\n 3 - CEF_SANDBOX_COMPAT_HASH (from cef_version.h, Windows only)\n"]
     pub fn cef_api_hash(
         version: ::std::os::raw::c_int,
         entry: ::std::os::raw::c_int,
@@ -623,21 +648,13 @@ pub enum cef_content_setting_types_t {
     CEF_CONTENT_SETTING_TYPE_APP_BANNER = 16,
     #[doc = " Advanced device-specific functions on MIDI devices. MIDI-SysEx\n communications can be used for changing the MIDI device's persistent state\n such as firmware."]
     CEF_CONTENT_SETTING_TYPE_SITE_ENGAGEMENT = 17,
-    #[doc = " Advanced device-specific functions on MIDI devices. MIDI-SysEx\n communications can be used for changing the MIDI device's persistent state\n such as firmware."]
-    CEF_CONTENT_SETTING_TYPE_DURABLE_STORAGE = 18,
-    #[doc = " Advanced device-specific functions on MIDI devices. MIDI-SysEx\n communications can be used for changing the MIDI device's persistent state\n such as firmware."]
+    CEF_CONTENT_SETTING_TYPE_PERSISTENT_STORAGE = 18,
     CEF_CONTENT_SETTING_TYPE_USB_CHOOSER_DATA = 19,
-    #[doc = " Advanced device-specific functions on MIDI devices. MIDI-SysEx\n communications can be used for changing the MIDI device's persistent state\n such as firmware."]
     CEF_CONTENT_SETTING_TYPE_BLUETOOTH_GUARD = 20,
-    #[doc = " Advanced device-specific functions on MIDI devices. MIDI-SysEx\n communications can be used for changing the MIDI device's persistent state\n such as firmware."]
     CEF_CONTENT_SETTING_TYPE_BACKGROUND_SYNC = 21,
-    #[doc = " Advanced device-specific functions on MIDI devices. MIDI-SysEx\n communications can be used for changing the MIDI device's persistent state\n such as firmware."]
     CEF_CONTENT_SETTING_TYPE_AUTOPLAY = 22,
-    #[doc = " Advanced device-specific functions on MIDI devices. MIDI-SysEx\n communications can be used for changing the MIDI device's persistent state\n such as firmware."]
     CEF_CONTENT_SETTING_TYPE_IMPORTANT_SITE_INFO = 23,
-    #[doc = " Advanced device-specific functions on MIDI devices. MIDI-SysEx\n communications can be used for changing the MIDI device's persistent state\n such as firmware."]
     CEF_CONTENT_SETTING_TYPE_PERMISSION_AUTOBLOCKER_DATA = 24,
-    #[doc = " Advanced device-specific functions on MIDI devices. MIDI-SysEx\n communications can be used for changing the MIDI device's persistent state\n such as firmware."]
     CEF_CONTENT_SETTING_TYPE_ADS = 25,
     #[doc = " Website setting which stores metadata for the subresource filter to aid in\n decisions for whether or not to show the UI."]
     CEF_CONTENT_SETTING_TYPE_ADS_DATA = 26,
@@ -754,8 +771,7 @@ pub enum cef_content_setting_types_t {
     CEF_CONTENT_SETTING_TYPE_FEDERATED_IDENTITY_IDENTITY_PROVIDER_REGISTRATION = 83,
     #[doc = " Content setting which is used to indicate whether anti-abuse functionality\n should be enabled."]
     CEF_CONTENT_SETTING_TYPE_ANTI_ABUSE = 84,
-    #[doc = " Content setting used to indicate whether third-party storage partitioning\n should be enabled."]
-    CEF_CONTENT_SETTING_TYPE_THIRD_PARTY_STORAGE_PARTITIONING = 85,
+    CEF_CONTENT_SETTING_TYPE_THIRD_PARTY_STORAGE_PARTITIONING_DEPRECATED = 85,
     #[doc = " Used to indicate whether HTTPS-First Mode is enabled on the hostname."]
     CEF_CONTENT_SETTING_TYPE_HTTPS_ENFORCED = 86,
     #[doc = " Setting for enabling the `getAllScreensMedia` API. Spec link:\n https://github.com/screen-share/capture-all-screens"]
@@ -766,8 +782,7 @@ pub enum cef_content_setting_types_t {
     CEF_CONTENT_SETTING_TYPE_TPCD_HEURISTICS_GRANTS = 89,
     #[doc = " Content Setting for 3PC accesses granted by metadata delivered via the\n component updater service. This type will only be used when\n `net::features::kTpcdMetadataGrants` is enabled."]
     CEF_CONTENT_SETTING_TYPE_TPCD_METADATA_GRANTS = 90,
-    #[doc = " Content Setting for 3PC accesses granted via 3PC deprecation trial."]
-    CEF_CONTENT_SETTING_TYPE_TPCD_TRIAL = 91,
+    CEF_CONTENT_SETTING_TYPE_TPCD_TRIAL_DEPRECATED = 91,
     CEF_CONTENT_SETTING_TYPE_TOP_LEVEL_TPCD_TRIAL_DEPRECATED = 92,
     CEF_CONTENT_SETTING_TYPE_TOP_LEVEL_TPCD_ORIGIN_TRIAL_DEPRECATED = 93,
     #[doc = " Content setting used to indicate whether entering picture-in-picture\n automatically should be enabled."]
@@ -798,8 +813,7 @@ pub enum cef_content_setting_types_t {
     CEF_CONTENT_SETTING_TYPE_POINTER_LOCK = 106,
     #[doc = " Website setting which is used for RevokedPermissionsService to store\n auto-revoked notification permissions from abusive sites."]
     CEF_CONTENT_SETTING_TYPE_REVOKED_ABUSIVE_NOTIFICATION_PERMISSIONS = 107,
-    #[doc = " Content setting that controls tracking protection status per site.\n BLOCK: Protections enabled. This is the default state.\n ALLOW: Protections disabled."]
-    CEF_CONTENT_SETTING_TYPE_TRACKING_PROTECTION = 108,
+    CEF_CONTENT_SETTING_TYPE_TRACKING_PROTECTION_DEPRECATED = 108,
     #[doc = " With this permission, when the application calls `getDisplayMedia()`, a\n system audio track can be returned without showing the display media\n selection picker. The application can explicitly specify\n `systemAudio: 'exclude'` or `video: true` to still show the display media\n selection picker if needed. Please note that the setting only works for\n WebUI."]
     CEF_CONTENT_SETTING_TYPE_DISPLAY_MEDIA_SYSTEM_AUDIO = 109,
     #[doc = " Whether to use the higher-tier v8 optimizers for running JavaScript on the\n page."]
@@ -836,7 +850,11 @@ pub enum cef_content_setting_types_t {
     CEF_CONTENT_SETTING_TYPE_PERMISSION_ACTIONS_HISTORY = 125,
     #[doc = " Website setting to indicate whether the user has selected \"show original\"\n when suspicious warning is shown. If the user has selected this, the\n notification permission will not be revoked based on suspicious verdict."]
     CEF_CONTENT_SETTING_TYPE_SUSPICIOUS_NOTIFICATION_SHOW_ORIGINAL = 126,
-    CEF_CONTENT_SETTING_TYPE_NUM_VALUES = 127,
+    #[doc = " Content setting for whether the site is allowed to make local network\n requests. Split from LOCAL_NETWORK_ACCESS."]
+    CEF_CONTENT_SETTING_TYPE_LOCAL_NETWORK = 127,
+    #[doc = " Content setting for whether the site is allowed to make loopback network\n requests. Split from LOCAL_NETWORK_ACCESS."]
+    CEF_CONTENT_SETTING_TYPE_LOOPBACK_NETWORK = 128,
+    CEF_CONTENT_SETTING_TYPE_NUM_VALUES = 129,
 }
 #[repr(u32)]
 #[non_exhaustive]
@@ -1017,7 +1035,7 @@ const _: () = {
 pub type cef_accelerated_paint_info_common_t = _cef_accelerated_paint_info_common_t;
 #[repr(u32)]
 #[non_exhaustive]
-#[doc = "\n CEF supports both a Chrome runtime style (based on the Chrome UI layer) and\n an Alloy runtime style (based on the Chromium content layer). Chrome style\n provides the full Chrome UI and browser functionality whereas Alloy style\n provides less default browser functionality but adds additional client\n callbacks and support for windowless (off-screen) rendering. The style type\n is individually configured for each window/browser at creation time and\n different styles can be mixed during runtime. For additional comparative\n details on runtime styles see\n https://bitbucket.org/chromiumembedded/cef/wiki/Architecture.md#markdown-header-cef3\n\n Windowless rendering will always use Alloy style. Windowed rendering with a\n default window or client-provided parent window can configure the style via\n CefWindowInfo.runtime_style. Windowed rendering with the Views framework can\n configure the style via CefWindowDelegate::GetWindowRuntimeStyle and\n CefBrowserViewDelegate::GetBrowserRuntimeStyle. Alloy style Windows with the\n Views framework can host only Alloy style BrowserViews but Chrome style\n Windows can host both style BrowserViews. Additionally, a Chrome style\n Window can host at most one Chrome style BrowserView but potentially\n multiple Alloy style BrowserViews. See CefWindowInfo.runtime_style\n documentation for any additional platform-specific limitations.\n"]
+#[doc = "\n CEF supports both a Chrome runtime style (based on the Chrome UI layer) and\n an Alloy runtime style (based on the Chromium content layer). Chrome style\n provides the full Chrome UI and browser functionality whereas Alloy style\n provides less default browser functionality but adds additional client\n callbacks and support for windowless (off-screen) rendering. The style type\n is individually configured for each window/browser at creation time and\n different styles can be mixed during runtime. For additional comparative\n details on runtime styles see\n https://chromiumembedded.github.io/cef/architecture#cef3\n\n Windowless rendering will always use Alloy style. Windowed rendering with a\n default window or client-provided parent window can configure the style via\n CefWindowInfo.runtime_style. Windowed rendering with the Views framework can\n configure the style via CefWindowDelegate::GetWindowRuntimeStyle and\n CefBrowserViewDelegate::GetBrowserRuntimeStyle. Alloy style Windows with the\n Views framework can host only Alloy style BrowserViews but Chrome style\n Windows can host both style BrowserViews. Additionally, a Chrome style\n Window can host at most one Chrome style BrowserView but potentially\n multiple Alloy style BrowserViews. See CefWindowInfo.runtime_style\n documentation for any additional platform-specific limitations.\n"]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum cef_runtime_style_t {
     #[doc = "\n Use the default style. See above documentation for exceptions.\n"]
@@ -1247,10 +1265,12 @@ pub struct _cef_settings_t {
     pub chrome_app_icon_id: ::std::os::raw::c_int,
     #[doc = "\n Specify whether signal handlers must be disabled on POSIX systems.\n"]
     pub disable_signal_handlers: ::std::os::raw::c_int,
+    #[doc = "\n If true use a Views (bare-bones) window instead of a Chrome UI window when\n creating default popups for Chrome style native-hosted (non-Views)\n browsers. This applies when CefLifeSpanHandler::OnBeforePopup has not been\n implemented to provide parent window information for the new popup.\n"]
+    pub use_views_default_popup: ::std::os::raw::c_int,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _cef_settings_t"][::std::mem::size_of::<_cef_settings_t>() - 440usize];
+    ["Size of _cef_settings_t"][::std::mem::size_of::<_cef_settings_t>() - 448usize];
     ["Alignment of _cef_settings_t"][::std::mem::align_of::<_cef_settings_t>() - 8usize];
     ["Offset of field: _cef_settings_t::size"]
         [::std::mem::offset_of!(_cef_settings_t, size) - 0usize];
@@ -1312,6 +1332,8 @@ const _: () = {
         [::std::mem::offset_of!(_cef_settings_t, chrome_app_icon_id) - 432usize];
     ["Offset of field: _cef_settings_t::disable_signal_handlers"]
         [::std::mem::offset_of!(_cef_settings_t, disable_signal_handlers) - 436usize];
+    ["Offset of field: _cef_settings_t::use_views_default_popup"]
+        [::std::mem::offset_of!(_cef_settings_t, use_views_default_popup) - 440usize];
 };
 #[doc = "\n Initialization settings. Specify NULL or 0 to get the recommended default\n values. Many of these and other settings can also configured using command-\n line switches.\n"]
 pub type cef_settings_t = _cef_settings_t;
@@ -1409,6 +1431,8 @@ pub struct _cef_browser_settings_t {
     pub chrome_status_bubble: cef_state_t,
     #[doc = "\n Controls whether the Chrome zoom bubble will be shown when zooming. Only\n supported with Chrome style.\n"]
     pub chrome_zoom_bubble: cef_state_t,
+    #[doc = "\n Controls whether CDP accessibility tree serialization collapses off-screen\n nodes. When enabled, off-screen landmarks and headings are serialized as\n summaries (role + name only) and other off-screen nodes are pruned.\n This reduces snapshot size for AI agents using Playwright ariaSnapshot().\n WARNING: This collapses the CDP accessibility tree and disables CDP\n dynamic tree updates (nodesUpdated events). The DevTools Accessibility\n panel will show an incomplete tree. Platform screen readers (NVDA, JAWS,\n VoiceOver) are unaffected - they use a separate code path.\n Can also be configured at runtime using\n CefBrowserHost::SetAxViewportCollapse.\n"]
+    pub ax_viewport_collapse: cef_state_t,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
@@ -1474,6 +1498,8 @@ const _: () = {
         [::std::mem::offset_of!(_cef_browser_settings_t, chrome_status_bubble) - 252usize];
     ["Offset of field: _cef_browser_settings_t::chrome_zoom_bubble"]
         [::std::mem::offset_of!(_cef_browser_settings_t, chrome_zoom_bubble) - 256usize];
+    ["Offset of field: _cef_browser_settings_t::ax_viewport_collapse"]
+        [::std::mem::offset_of!(_cef_browser_settings_t, ax_viewport_collapse) - 260usize];
 };
 #[doc = "\n Browser initialization settings. Specify NULL or 0 to get the recommended\n default values. The consequences of using custom values may not be well\n tested. Many of these and other settings can also configured using command-\n line switches.\n"]
 pub type cef_browser_settings_t = _cef_browser_settings_t;
@@ -1716,6 +1742,8 @@ pub enum cef_errorcode_t {
     ERR_BLOCKED_BY_ORB = -32,
     ERR_NETWORK_ACCESS_REVOKED = -33,
     ERR_BLOCKED_BY_FINGERPRINTING_PROTECTION = -34,
+    ERR_BLOCKED_IN_INCOGNITO_BY_ADMINISTRATOR = -35,
+    ERR_LOCAL_NETWORK_PERMISSION_MISSING = -36,
     ERR_CONNECTION_CLOSED = -100,
     ERR_CONNECTION_RESET = -101,
     ERR_CONNECTION_REFUSED = -102,
@@ -1728,7 +1756,6 @@ pub enum cef_errorcode_t {
     ERR_ADDRESS_UNREACHABLE = -109,
     ERR_SSL_CLIENT_AUTH_CERT_NEEDED = -110,
     ERR_TUNNEL_CONNECTION_FAILED = -111,
-    ERR_NO_SSL_VERSIONS_ENABLED = -112,
     ERR_SSL_VERSION_OR_CIPHER_MISMATCH = -113,
     ERR_SSL_RENEGOTIATION_REQUESTED = -114,
     ERR_PROXY_AUTH_UNSUPPORTED = -115,
@@ -1752,13 +1779,10 @@ pub enum cef_errorcode_t {
     ERR_NAME_RESOLUTION_FAILED = -137,
     ERR_NETWORK_ACCESS_DENIED = -138,
     ERR_TEMPORARILY_THROTTLED = -139,
-    ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT = -140,
     ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED = -141,
     ERR_MSG_TOO_BIG = -142,
     ERR_WS_PROTOCOL_ERROR = -145,
     ERR_ADDRESS_IN_USE = -147,
-    ERR_SSL_HANDSHAKE_NOT_COMPLETED = -148,
-    ERR_SSL_BAD_PEER_PUBLIC_KEY = -149,
     ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN = -150,
     ERR_CLIENT_AUTH_CERT_TYPE_UNSUPPORTED = -151,
     ERR_SSL_DECRYPT_ERROR_ALERT = -153,
@@ -1826,9 +1850,6 @@ pub enum cef_errorcode_t {
     ERR_MALFORMED_IDENTITY = -329,
     ERR_CONTENT_DECODING_FAILED = -330,
     ERR_NETWORK_IO_SUSPENDED = -331,
-    ERR_SYN_REPLY_NOT_RECEIVED = -332,
-    ERR_ENCODING_CONVERSION_FAILED = -333,
-    ERR_UNRECOGNIZED_FTP_DIRECTORY_LISTING_FORMAT = -334,
     ERR_NO_SUPPORTED_PROXIES = -336,
     ERR_HTTP2_PROTOCOL_ERROR = -337,
     ERR_INVALID_AUTH_CREDENTIALS = -338,
@@ -1859,7 +1880,6 @@ pub enum cef_errorcode_t {
     ERR_HTTP_1_1_REQUIRED = -365,
     ERR_PROXY_HTTP_1_1_REQUIRED = -366,
     ERR_PAC_SCRIPT_TERMINATED = -367,
-    ERR_PROXY_REQUIRED = -368,
     ERR_INVALID_HTTP_RESPONSE = -370,
     ERR_CONTENT_DECODING_INIT_FAILED = -371,
     ERR_HTTP2_RST_STREAM_NO_ERROR_RECEIVED = -372,
@@ -1896,6 +1916,7 @@ pub enum cef_errorcode_t {
     ERR_INVALID_WEB_BUNDLE = -505,
     ERR_TRUST_TOKEN_OPERATION_FAILED = -506,
     ERR_TRUST_TOKEN_OPERATION_SUCCESS_WITHOUT_SENDING_REQUEST = -507,
+    ERR_HTTPENGINE_PROVIDER_IN_USE = -508,
     ERR_PKCS12_IMPORT_BAD_PASSWORD = -701,
     ERR_PKCS12_IMPORT_FAILED = -702,
     ERR_IMPORT_CA_CERT_NOT_CA = -703,
@@ -1912,7 +1933,6 @@ pub enum cef_errorcode_t {
     ERR_CERT_VERIFIER_CHANGED = -716,
     ERR_DNS_MALFORMED_RESPONSE = -800,
     ERR_DNS_SERVER_REQUIRES_TCP = -801,
-    ERR_DNS_SERVER_FAILED = -802,
     ERR_DNS_TIMED_OUT = -803,
     ERR_DNS_CACHE_MISS = -804,
     ERR_DNS_SEARCH_EMPTY = -805,
@@ -1923,6 +1943,11 @@ pub enum cef_errorcode_t {
     ERR_DNS_NO_MATCHING_SUPPORTED_ALPN = -811,
     ERR_DNS_SECURE_PROBE_RECORD_INVALID = -814,
     ERR_DNS_CACHE_INVALIDATION_IN_PROGRESS = -815,
+    ERR_DNS_FORMAT_ERROR = -816,
+    ERR_DNS_SERVER_FAILURE = -817,
+    ERR_DNS_NOT_IMPLEMENTED = -818,
+    ERR_DNS_REFUSED = -819,
+    ERR_DNS_OTHER_FAILURE = -820,
     ERR_BLOB_INVALID_CONSTRUCTION_ARGUMENTS = -900,
     ERR_BLOB_OUT_OF_MEMORY = -901,
     ERR_BLOB_FILE_WRITE_FAILED = -902,
@@ -2001,7 +2026,9 @@ pub enum cef_resultcode_t {
     CEF_RESULT_CODE_NORMAL_EXIT_AUTO_DE_ELEVATED = 38,
     #[doc = " Upon encountering a commit failure in a process, PartitionAlloc terminated\n another process deemed less important."]
     CEF_RESULT_CODE_TERMINATED_BY_OTHER_PROCESS_ON_COMMIT_FAILURE = 39,
-    CEF_RESULT_CODE_CHROME_LAST = 40,
+    #[doc = " The isolated browser process launched but it was not possible to wait on\n the exit of the process, so the browser must exit."]
+    CEF_RESULT_CODE_INVALID_ISOLATED_BROWSER_PROCESS = 40,
+    CEF_RESULT_CODE_CHROME_LAST = 41,
     CEF_RESULT_CODE_SANDBOX_FATAL_FIRST = 7006,
     #[doc = " Windows sandbox could not lower the token."]
     CEF_RESULT_CODE_SANDBOX_FATAL_DROPTOKEN = 7007,
@@ -4054,7 +4081,7 @@ pub enum cef_chrome_toolbar_type_t {
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum cef_chrome_page_action_icon_type_t {
     CEF_CPAIT_BOOKMARK_STAR = 0,
-    CEF_CPAIT_CLICK_TO_CALL = 1,
+    CEF_CPAIT_CLICK_TO_CALL_DEPRECATED = 1,
     CEF_CPAIT_COOKIE_CONTROLS = 2,
     CEF_CPAIT_FILE_SYSTEM_ACCESS = 3,
     CEF_CPAIT_FIND = 4,
@@ -4089,7 +4116,14 @@ pub enum cef_chrome_page_action_icon_type_t {
     CEF_CPAIT_CHANGE_PASSWORD = 33,
     CEF_CPAIT_LENS_OVERLAY_HOMEWORK = 34,
     CEF_CPAIT_AI_MODE = 35,
-    CEF_CPAIT_NUM_VALUES = 36,
+    CEF_CPAIT_READING_MODE = 36,
+    CEF_CPAIT_CONTEXTUAL_SIDE_PANEL = 37,
+    CEF_CPAIT_JS_OPTIMIZATIONS = 38,
+    CEF_CPAIT_RECORD_REPLAY = 39,
+    CEF_CPAIT_INDIGO = 40,
+    CEF_CPAIT_FEDERATION_DEPRECATED = 41,
+    CEF_CPAIT_GLIC = 42,
+    CEF_CPAIT_NUM_VALUES = 43,
 }
 #[repr(u32)]
 #[non_exhaustive]
@@ -4265,6 +4299,9 @@ pub enum cef_permission_request_types_t {
     CEF_PERMISSION_TYPE_WINDOW_MANAGEMENT = 8388608,
     CEF_PERMISSION_TYPE_FILE_SYSTEM_ACCESS = 16777216,
     CEF_PERMISSION_TYPE_LOCAL_NETWORK_ACCESS = 33554432,
+    CEF_PERMISSION_TYPE_LOCAL_NETWORK = 67108864,
+    CEF_PERMISSION_TYPE_LOOPBACK_NETWORK = 134217728,
+    CEF_PERMISSION_TYPE_SENSORS = 268435456,
 }
 #[repr(u32)]
 #[non_exhaustive]
@@ -8068,10 +8105,17 @@ pub struct _cef_request_context_t {
             observer: *mut _cef_setting_observer_t,
         ) -> *mut _cef_registration_t,
     >,
+    #[doc = "\n Clears the HTTP cache. If |callback| is non-NULL it will be executed on\n the UI thread after completion.\n"]
+    pub clear_http_cache: ::std::option::Option<
+        unsafe extern "C" fn(
+            self_: *mut _cef_request_context_t,
+            callback: *mut _cef_completion_callback_t,
+        ),
+    >,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _cef_request_context_t"][::std::mem::size_of::<_cef_request_context_t>() - 264usize];
+    ["Size of _cef_request_context_t"][::std::mem::size_of::<_cef_request_context_t>() - 272usize];
     ["Alignment of _cef_request_context_t"]
         [::std::mem::align_of::<_cef_request_context_t>() - 8usize];
     ["Offset of field: _cef_request_context_t::base"]
@@ -8124,6 +8168,8 @@ const _: () = {
     ) - 248usize];
     ["Offset of field: _cef_request_context_t::add_setting_observer"]
         [::std::mem::offset_of!(_cef_request_context_t, add_setting_observer) - 256usize];
+    ["Offset of field: _cef_request_context_t::clear_http_cache"]
+        [::std::mem::offset_of!(_cef_request_context_t, clear_http_cache) - 264usize];
 };
 #[doc = "\n A request context provides request handling for a set of related browser or\n URL request objects. A request context can be specified when creating a new\n browser via the cef_browser_host_t static factory functions or when creating\n a new URL request via the cef_urlrequest_t static factory functions. Browser\n objects with different request contexts will never be hosted in the same\n render process. Browser objects with the same request context may or may not\n be hosted in the same render process depending on the process model. Browser\n objects created indirectly via the JavaScript window.open function or\n targeted links will share the same render process and the same request\n context as the source browser. When running in single-process mode there is\n only a single render process (the main process) and so all browsers created\n in single-process mode will share the same request context. This will be the\n first request context passed into a cef_browser_host_t static factory\n function and all other request context objects will be ignored.\n\n NOTE: This struct is allocated DLL-side.\n"]
 pub type cef_request_context_t = _cef_request_context_t;
@@ -8596,7 +8642,7 @@ pub struct _cef_browser_host_t {
     pub was_hidden: ::std::option::Option<
         unsafe extern "C" fn(self_: *mut _cef_browser_host_t, hidden: ::std::os::raw::c_int),
     >,
-    #[doc = "\n Notify the browser that screen information has changed. Updated\n information will be sent to the renderer process to configure screen size\n and position values used by CSS and JavaScript (window.deviceScaleFactor,\n window.screenX/Y, window.outerWidth/Height, etc.). For background see\n https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md#markdown-\n header-coordinate-systems\n\n This function is used with (a) windowless rendering and (b) windowed\n rendering with external (client-provided) root window.\n\n With windowless rendering the browser will call\n cef_render_handler_t::GetScreenInfo,\n cef_render_handler_t::GetRootScreenRect and\n cef_render_handler_t::GetViewRect. This simulates moving or resizing the\n root window in the current display, moving the root window from one\n display to another, or changing the properties of the current display.\n\n With windowed rendering the browser will call\n cef_display_handler_t::GetRootWindowScreenRect and use the associated\n display properties.\n"]
+    #[doc = "\n Notify the browser that screen information has changed. Updated\n information will be sent to the renderer process to configure screen size\n and position values used by CSS and JavaScript (window.deviceScaleFactor,\n window.screenX/Y, window.outerWidth/Height, etc.). For background see\n https://chromiumembedded.github.io/cef/general_usage#coordinate-systems\n\n This function is used with (a) windowless rendering and (b) windowed\n rendering with external (client-provided) root window.\n\n With windowless rendering the browser will call\n cef_render_handler_t::GetScreenInfo,\n cef_render_handler_t::GetRootScreenRect and\n cef_render_handler_t::GetViewRect. This simulates moving or resizing the\n root window in the current display, moving the root window from one\n display to another, or changing the properties of the current display.\n\n With windowed rendering the browser will call\n cef_display_handler_t::GetRootWindowScreenRect and use the associated\n display properties.\n"]
     pub notify_screen_info_changed:
         ::std::option::Option<unsafe extern "C" fn(self_: *mut _cef_browser_host_t)>,
     #[doc = "\n Invalidate the view. The browser will call cef_render_handler_t::OnPaint\n asynchronously. This function is only used when window rendering is\n disabled.\n"]
@@ -8780,10 +8826,14 @@ pub struct _cef_browser_host_t {
     pub get_runtime_style: ::std::option::Option<
         unsafe extern "C" fn(self_: *mut _cef_browser_host_t) -> cef_runtime_style_t,
     >,
+    #[doc = "\n Enable or disable CDP accessibility tree viewport collapse for this\n browser. When enabled, off-screen landmarks and headings are serialized as\n summaries and other off-screen nodes are pruned. Overrides the\n cef_browser_tSettings.ax_viewport_collapse value. If called on the UI\n thread the change will be applied immediately. Otherwise, the change will\n be applied asynchronously on the UI thread. WARNING: This collapses the\n CDP accessibility tree and disables CDP dynamic tree updates (nodesUpdated\n events). The DevTools Accessibility panel will show an incomplete tree.\n Platform screen readers (NVDA, JAWS, VoiceOver) are unaffected - they use\n a separate code path.\n"]
+    pub set_ax_viewport_collapse: ::std::option::Option<
+        unsafe extern "C" fn(self_: *mut _cef_browser_host_t, enabled: ::std::os::raw::c_int),
+    >,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _cef_browser_host_t"][::std::mem::size_of::<_cef_browser_host_t>() - 584usize];
+    ["Size of _cef_browser_host_t"][::std::mem::size_of::<_cef_browser_host_t>() - 592usize];
     ["Alignment of _cef_browser_host_t"][::std::mem::align_of::<_cef_browser_host_t>() - 8usize];
     ["Offset of field: _cef_browser_host_t::base"]
         [::std::mem::offset_of!(_cef_browser_host_t, base) - 0usize];
@@ -8923,6 +8973,8 @@ const _: () = {
         [::std::mem::offset_of!(_cef_browser_host_t, is_render_process_unresponsive) - 568usize];
     ["Offset of field: _cef_browser_host_t::get_runtime_style"]
         [::std::mem::offset_of!(_cef_browser_host_t, get_runtime_style) - 576usize];
+    ["Offset of field: _cef_browser_host_t::set_ax_viewport_collapse"]
+        [::std::mem::offset_of!(_cef_browser_host_t, set_ax_viewport_collapse) - 584usize];
 };
 #[doc = "\n Structure used to represent the browser process aspects of a browser. The\n functions of this structure can only be called in the browser process. They\n may be called on any thread in that process unless otherwise indicated in\n the comments.\n\n NOTE: This struct is allocated DLL-side.\n"]
 pub type cef_browser_host_t = _cef_browser_host_t;
@@ -10318,10 +10370,14 @@ pub struct _cef_download_item_t {
     pub get_mime_type: ::std::option::Option<
         unsafe extern "C" fn(self_: *mut _cef_download_item_t) -> cef_string_userfree_t,
     >,
+    #[doc = "\n Returns true (1) if the download has been paused.\n"]
+    pub is_paused: ::std::option::Option<
+        unsafe extern "C" fn(self_: *mut _cef_download_item_t) -> ::std::os::raw::c_int,
+    >,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of _cef_download_item_t"][::std::mem::size_of::<_cef_download_item_t>() - 192usize];
+    ["Size of _cef_download_item_t"][::std::mem::size_of::<_cef_download_item_t>() - 200usize];
     ["Alignment of _cef_download_item_t"][::std::mem::align_of::<_cef_download_item_t>() - 8usize];
     ["Offset of field: _cef_download_item_t::base"]
         [::std::mem::offset_of!(_cef_download_item_t, base) - 0usize];
@@ -10363,6 +10419,8 @@ const _: () = {
         [::std::mem::offset_of!(_cef_download_item_t, get_content_disposition) - 176usize];
     ["Offset of field: _cef_download_item_t::get_mime_type"]
         [::std::mem::offset_of!(_cef_download_item_t, get_mime_type) - 184usize];
+    ["Offset of field: _cef_download_item_t::is_paused"]
+        [::std::mem::offset_of!(_cef_download_item_t, is_paused) - 192usize];
 };
 #[doc = "\n Structure used to represent a download item.\n\n NOTE: This struct is allocated DLL-side.\n"]
 pub type cef_download_item_t = _cef_download_item_t;
@@ -10787,7 +10845,7 @@ pub type cef_keyboard_handler_t = _cef_keyboard_handler_t;
 pub struct _cef_life_span_handler_t {
     #[doc = "\n Base structure.\n"]
     pub base: cef_base_ref_counted_t,
-    #[doc = "\n Called on the UI thread before a new popup browser is created. The\n |browser| and |frame| values represent the source of the popup request\n (opener browser and frame). The |popup_id| value uniquely identifies the\n popup in the context of the opener browser. The |target_url| and\n |target_frame_name| values indicate where the popup browser should\n navigate and may be NULL if not specified with the request. The\n |target_disposition| value indicates where the user intended to open the\n popup (e.g. current tab, new tab, etc). The |user_gesture| value will be\n true (1) if the popup was opened via explicit user gesture (e.g. clicking\n a link) or false (0) if the popup opened automatically (e.g. via the\n DomContentLoaded event). The |popupFeatures| structure contains additional\n information about the requested popup window. To allow creation of the\n popup browser optionally modify |windowInfo|, |client|, |settings| and\n |no_javascript_access| and return false (0). To cancel creation of the\n popup browser return true (1). The |client| and |settings| values will\n default to the source browser's values. If the |no_javascript_access|\n value is set to false (0) the new browser will not be scriptable and may\n not be hosted in the same renderer process as the source browser. Any\n modifications to |windowInfo| will be ignored if the parent browser is\n wrapped in a cef_browser_view_t. The |extra_info| parameter provides an\n opportunity to specify extra information specific to the created popup\n browser that will be passed to\n cef_render_process_handler_t::on_browser_created() in the render process.\n\n If popup browser creation succeeds then OnAfterCreated will be called for\n the new popup browser. If popup browser creation fails, and if the opener\n browser has not yet been destroyed, then OnBeforePopupAborted will be\n called for the opener browser. See OnBeforePopupAborted documentation for\n additional details.\n"]
+    #[doc = "\n Called on the UI thread before a new popup browser is created. The\n |browser| and |frame| values represent the source of the popup request\n (opener browser and frame). The |popup_id| value uniquely identifies the\n popup in the context of the opener browser. The |target_url| and\n |target_frame_name| values indicate where the popup browser should\n navigate and may be NULL if not specified with the request. The\n |target_disposition| value indicates where the user intended to open the\n popup (e.g. current tab, new tab, etc). The |user_gesture| value will be\n true (1) if the popup was opened via explicit user gesture (e.g. clicking\n a link) or false (0) if the popup opened automatically (e.g. via the\n DomContentLoaded event). The |popupFeatures| structure contains additional\n information about the requested popup window. To allow creation of the\n popup browser optionally modify |windowInfo|, |client|, |settings| and\n |no_javascript_access| and return false (0). To cancel creation of the\n popup browser return true (1). The |client| and |settings| values will\n default to the source browser's values. If the |no_javascript_access|\n value is set to false (0) the new browser will not be scriptable and may\n not be hosted in the same renderer process as the source browser. Any\n modifications to |windowInfo| will be ignored if the parent browser is\n wrapped in a cef_browser_view_t. The |extra_info| parameter provides an\n opportunity to specify extra information specific to the created popup\n browser that will be passed to\n cef_render_process_handler_t::on_browser_created() in the render process.\n\n If popup browser creation succeeds then OnAfterCreated will be called for\n the new popup browser. If popup browser creation fails, and if the opener\n browser has not yet been destroyed, then OnBeforePopupAborted will be\n called for the opener browser. See OnBeforePopupAborted documentation for\n additional details.\n\n A default popup window is created if this function returns false (0)\n without setting a parent window handle via cef_window_tInfo (for native-\n hosted popups), or without implementing\n cef_browser_view_delegate_t::OnPopupBrowserViewCreated (for Views-hosted\n popups). The default popup window type depends on the parent browser\n configuration:\n - Views-hosted parent: Creates a Views-hosted popup window.\n - Native-hosted Alloy style parent: Creates a native popup window.\n - Native-hosted Chrome style parent: Creates a Chrome UI popup window by\n   default; set CefSettings.use_views_default_popup to true (1) to instead\n   create a Views-hosted popup window.\n"]
     pub on_before_popup: ::std::option::Option<
         unsafe extern "C" fn(
             self_: *mut _cef_life_span_handler_t,
@@ -11411,7 +11469,7 @@ pub struct _cef_render_handler_t {
             height: ::std::os::raw::c_int,
         ),
     >,
-    #[doc = "\n Called when an element has been rendered to the shared texture handle.\n |type| indicates whether the element is the view or the popup widget.\n |dirtyRects| contains the set of rectangles in pixel coordinates that need\n to be repainted. |info| contains the shared handle; on Windows it is a\n HANDLE to a texture that can be opened with D3D11 OpenSharedResource, on\n macOS it is an IOSurface pointer that can be opened with Metal or OpenGL,\n and on Linux it contains several planes, each with an fd to the underlying\n system native buffer.\n\n The underlying implementation uses a pool to deliver frames. As a result,\n the handle may differ every frame depending on how many frames are in-\n progress. The handle's resource cannot be cached and cannot be accessed\n outside of this callback. It should be reopened each time this callback is\n executed and the contents should be copied to a texture owned by the\n client application. The contents of |info| will be released back to the\n pool after this callback returns.\n"]
+    #[doc = "\n Called when an element has been rendered to the shared texture handle.\n |type| indicates whether the element is the view or the popup widget.\n |dirtyRects| contains the set of rectangles in pixel coordinates that need\n to be repainted. |info| contains the shared handle; on Windows it is a\n HANDLE to a texture that can be opened with D3D11 OpenSharedResource1 or\n D3D12 OpenSharedHandle, on macOS it is an IOSurface pointer that can be\n opened with Metal or OpenGL, and on Linux it contains several planes, each\n with an fd to the underlying system native buffer.\n\n The underlying implementation uses a pool to deliver frames. As a result,\n the handle may differ every frame depending on how many frames are in-\n progress. The handle's resource cannot be cached and cannot be accessed\n outside of this callback. It should be reopened each time this callback is\n executed and the contents should be copied to a texture owned by the\n client application. The contents of |info| will be released back to the\n pool after this callback returns.\n"]
     pub on_accelerated_paint: ::std::option::Option<
         unsafe extern "C" fn(
             self_: *mut _cef_render_handler_t,
@@ -13126,6 +13184,44 @@ const _: () = {
 };
 #[doc = "\n Callback structure that is passed to cef_v8_value_t::CreateArrayBuffer.\n\n NOTE: This struct is allocated client-side.\n"]
 pub type cef_v8_array_buffer_release_callback_t = _cef_v8_array_buffer_release_callback_t;
+#[doc = "\n Structure representing a V8 ArrayBuffer backing store. The backing store\n holds the memory that backs an ArrayBuffer. It must be created on a thread\n with a valid V8 isolate (renderer main thread or WebWorker thread). Once\n created, the data() pointer can be safely read/written from any thread. This\n allows expensive operations like memcpy to be performed on a background\n thread before creating the ArrayBuffer on the V8 thread.\n\n The backing store is consumed when passed to\n cef_v8_value_t::cef_v8_value_create_array_buffer_from_backing_store(), after\n which is_valid() returns false (0).\n\n NOTE: This struct is allocated DLL-side.\n"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _cef_v8_backing_store_t {
+    #[doc = "\n Base structure.\n"]
+    pub base: cef_base_ref_counted_t,
+    #[doc = "\n Returns a pointer to the allocated memory, or nullptr if the backing store\n has been consumed or is otherwise invalid. The pointer is safe to\n read/write from any thread. The caller must ensure all writes are complete\n before passing this object to\n cef_v8_value_create_array_buffer_from_backing_store(). Pointers obtained\n from this function should not be retained after calling\n cef_v8_value_create_array_buffer_from_backing_store(), as the memory will\n then be owned by the ArrayBuffer and subject to V8 garbage collection.\n"]
+    pub data: ::std::option::Option<
+        unsafe extern "C" fn(self_: *mut _cef_v8_backing_store_t) -> *mut ::std::os::raw::c_void,
+    >,
+    #[doc = "\n Returns the size of the allocated memory in bytes, or 0 if the backing\n store has been consumed.\n"]
+    pub byte_length:
+        ::std::option::Option<unsafe extern "C" fn(self_: *mut _cef_v8_backing_store_t) -> usize>,
+    #[doc = "\n Returns true (1) if this backing store has not yet been consumed by\n cef_v8_value_create_array_buffer_from_backing_store().\n"]
+    pub is_valid: ::std::option::Option<
+        unsafe extern "C" fn(self_: *mut _cef_v8_backing_store_t) -> ::std::os::raw::c_int,
+    >,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of _cef_v8_backing_store_t"][::std::mem::size_of::<_cef_v8_backing_store_t>() - 64usize];
+    ["Alignment of _cef_v8_backing_store_t"]
+        [::std::mem::align_of::<_cef_v8_backing_store_t>() - 8usize];
+    ["Offset of field: _cef_v8_backing_store_t::base"]
+        [::std::mem::offset_of!(_cef_v8_backing_store_t, base) - 0usize];
+    ["Offset of field: _cef_v8_backing_store_t::data"]
+        [::std::mem::offset_of!(_cef_v8_backing_store_t, data) - 40usize];
+    ["Offset of field: _cef_v8_backing_store_t::byte_length"]
+        [::std::mem::offset_of!(_cef_v8_backing_store_t, byte_length) - 48usize];
+    ["Offset of field: _cef_v8_backing_store_t::is_valid"]
+        [::std::mem::offset_of!(_cef_v8_backing_store_t, is_valid) - 56usize];
+};
+#[doc = "\n Structure representing a V8 ArrayBuffer backing store. The backing store\n holds the memory that backs an ArrayBuffer. It must be created on a thread\n with a valid V8 isolate (renderer main thread or WebWorker thread). Once\n created, the data() pointer can be safely read/written from any thread. This\n allows expensive operations like memcpy to be performed on a background\n thread before creating the ArrayBuffer on the V8 thread.\n\n The backing store is consumed when passed to\n cef_v8_value_t::cef_v8_value_create_array_buffer_from_backing_store(), after\n which is_valid() returns false (0).\n\n NOTE: This struct is allocated DLL-side.\n"]
+pub type cef_v8_backing_store_t = _cef_v8_backing_store_t;
+unsafe extern "C" {
+    #[doc = "\n Create a new backing store with allocated memory of |byte_length| bytes. The\n memory is uninitialized. This function must be called on a thread with a\n valid V8 isolate. The returned object can safely be passed to other threads.\n Returns nullptr on failure.\n"]
+    pub fn cef_v8_backing_store_create(byte_length: usize) -> *mut cef_v8_backing_store_t;
+}
 #[doc = "\n Structure representing a V8 value handle. V8 handles can only be accessed\n from the thread on which they are created. Valid threads for creating a V8\n handle include the render process main thread (TID_RENDERER) and WebWorker\n threads. A task runner for posting tasks on the associated thread can be\n retrieved via the cef_v8_context_t::get_task_runner() function.\n\n NOTE: This struct is allocated DLL-side.\n"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -13570,6 +13666,12 @@ unsafe extern "C" {
     pub fn cef_v8_value_create_array_buffer_with_copy(
         buffer: *mut ::std::os::raw::c_void,
         length: usize,
+    ) -> *mut cef_v8_value_t;
+}
+unsafe extern "C" {
+    #[doc = "\n Create a new cef_v8_value_t object of type ArrayBuffer from a backing store\n previously created with cef_v8_backing_store_t::cef_translator_test_scoped_l\n ibrary_child_child_create(). This is a zero-copy operation - the ArrayBuffer\n uses the memory already allocated by the backing store. The backing store is\n consumed and becomes invalid after this call. This function should only be\n called from within the scope of a cef_render_process_handler_t,\n cef_v8_handler_t or cef_v8_accessor_t callback, or in combination with\n calling enter() and exit() on a stored cef_v8_context_t reference.\n"]
+    pub fn cef_v8_value_create_array_buffer_from_backing_store(
+        backing_store: *mut cef_v8_backing_store_t,
     ) -> *mut cef_v8_value_t;
 }
 unsafe extern "C" {
@@ -14019,6 +14121,193 @@ unsafe extern "C" {
 unsafe extern "C" {
     #[doc = "\n Set to true (1) before calling OS APIs on the CEF UI thread that will enter\n a native message loop (see usage restrictions below). Set to false (0) after\n exiting the native message loop. On Windows, use the CefSetOSModalLoop\n function instead in cases like native top menus where resize of the browser\n content is not required, or in cases like printer APIs where reentrancy\n safety cannot be guaranteed.\n\n Nested processing of Chromium tasks is disabled by default because common\n controls and/or printer functions may use nested native message loops that\n lead to unplanned reentrancy. This function re-enables nested processing in\n the scope of an upcoming native message loop. It must only be used in cases\n where the stack is reentrancy safe and processing nestable tasks is\n explicitly safe. Do not use in cases (like the printer example) where an OS\n API may experience unplanned reentrancy as a result of a new task executing\n immediately.\n\n For instance,\n - The UI thread is running a message loop.\n - It receives a task #1 and executes it.\n - The task #1 implicitly starts a nested message loop. For example, via\n   Windows APIs such as MessageBox or GetSaveFileName, or default handling of\n   a user-initiated drag/resize operation (e.g. DefWindowProc handling of\n   WM_SYSCOMMAND for SC_MOVE/SC_SIZE).\n - The UI thread receives a task #2 before or while in this second message\n   loop.\n - With NestableTasksAllowed set to true (1), the task #2 will run right\n   away. Otherwise, it will be executed right after task #1 completes at\n   \"thread message loop level\".\n"]
     pub fn cef_set_nestable_tasks_allowed(allowed: ::std::os::raw::c_int);
+}
+#[repr(u32)]
+#[non_exhaustive]
+#[doc = "\n Component update error codes. These map to update_client::Error values\n from components/update_client/update_client_errors.h\n"]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum cef_component_update_error_t {
+    #[doc = "\n No error.\n"]
+    CEF_COMPONENT_UPDATE_ERROR_NONE = 0,
+    #[doc = "\n An update is already in progress for this component.\n"]
+    CEF_COMPONENT_UPDATE_ERROR_UPDATE_IN_PROGRESS = 1,
+    #[doc = "\n The update was canceled.\n"]
+    CEF_COMPONENT_UPDATE_ERROR_UPDATE_CANCELED = 2,
+    #[doc = "\n The update should be retried later.\n"]
+    CEF_COMPONENT_UPDATE_ERROR_RETRY_LATER = 3,
+    #[doc = "\n A service error occurred.\n"]
+    CEF_COMPONENT_UPDATE_ERROR_SERVICE_ERROR = 4,
+    #[doc = "\n An error occurred during the update check.\n"]
+    CEF_COMPONENT_UPDATE_ERROR_UPDATE_CHECK_ERROR = 5,
+    #[doc = "\n The component was not found.\n"]
+    CEF_COMPONENT_UPDATE_ERROR_CRX_NOT_FOUND = 6,
+    #[doc = "\n An invalid argument was provided.\n"]
+    CEF_COMPONENT_UPDATE_ERROR_INVALID_ARGUMENT = 7,
+    #[doc = "\n Bad CRX data callback.\n"]
+    CEF_COMPONENT_UPDATE_ERROR_BAD_CRX_DATA_CALLBACK = 8,
+}
+#[repr(u32)]
+#[non_exhaustive]
+#[doc = "\n Component update priority. Maps to\n component_updater::OnDemandUpdater::Priority.\n"]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum cef_component_update_priority_t {
+    #[doc = "\n Background priority. Update requests may be queued.\n"]
+    CEF_COMPONENT_UPDATE_PRIORITY_BACKGROUND = 0,
+    #[doc = "\n Foreground priority. Update requests are processed immediately.\n"]
+    CEF_COMPONENT_UPDATE_PRIORITY_FOREGROUND = 1,
+}
+#[repr(u32)]
+#[non_exhaustive]
+#[doc = "\n Component state values. These map to update_client::ComponentState values\n from components/update_client/update_client.h\n\n A component is considered \"installed\" when its state is one of:\n CEF_COMPONENT_STATE_UPDATED, CEF_COMPONENT_STATE_UP_TO_DATE, or\n CEF_COMPONENT_STATE_RUN.\n"]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum cef_component_state_t {
+    #[doc = "\n The component has not yet been checked for updates.\n"]
+    CEF_COMPONENT_STATE_NEW = 0,
+    #[doc = "\n The component is being checked for updates now.\n"]
+    CEF_COMPONENT_STATE_CHECKING = 1,
+    #[doc = "\n An update is available and will soon be processed.\n"]
+    CEF_COMPONENT_STATE_CAN_UPDATE = 2,
+    #[doc = "\n An update is being downloaded.\n"]
+    CEF_COMPONENT_STATE_DOWNLOADING = 3,
+    #[doc = "\n An update is being decompressed.\n"]
+    CEF_COMPONENT_STATE_DECOMPRESSING = 4,
+    #[doc = "\n A patch is being applied.\n"]
+    CEF_COMPONENT_STATE_PATCHING = 5,
+    #[doc = "\n An update is being installed.\n"]
+    CEF_COMPONENT_STATE_UPDATING = 6,
+    #[doc = "\n An update was successfully applied. The component is now installed.\n"]
+    CEF_COMPONENT_STATE_UPDATED = 7,
+    #[doc = "\n The component was already up to date. The component is installed.\n"]
+    CEF_COMPONENT_STATE_UP_TO_DATE = 8,
+    #[doc = "\n The service encountered an error during the update process.\n"]
+    CEF_COMPONENT_STATE_UPDATE_ERROR = 9,
+    #[doc = "\n The component is running a server-specified action. The component is\n installed.\n"]
+    CEF_COMPONENT_STATE_RUN = 10,
+}
+#[doc = "\n Callback structure for component update results.\n\n NOTE: This struct is allocated client-side.\n"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _cef_component_update_callback_t {
+    #[doc = "\n Base structure.\n"]
+    pub base: cef_base_ref_counted_t,
+    #[doc = "\n Called when the component update operation completes. |component_id| is\n the ID of the component that was updated. |error| contains the result of\n the operation.\n"]
+    pub on_complete: ::std::option::Option<
+        unsafe extern "C" fn(
+            self_: *mut _cef_component_update_callback_t,
+            component_id: *const cef_string_t,
+            error: cef_component_update_error_t,
+        ),
+    >,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of _cef_component_update_callback_t"]
+        [::std::mem::size_of::<_cef_component_update_callback_t>() - 48usize];
+    ["Alignment of _cef_component_update_callback_t"]
+        [::std::mem::align_of::<_cef_component_update_callback_t>() - 8usize];
+    ["Offset of field: _cef_component_update_callback_t::base"]
+        [::std::mem::offset_of!(_cef_component_update_callback_t, base) - 0usize];
+    ["Offset of field: _cef_component_update_callback_t::on_complete"]
+        [::std::mem::offset_of!(_cef_component_update_callback_t, on_complete) - 40usize];
+};
+#[doc = "\n Callback structure for component update results.\n\n NOTE: This struct is allocated client-side.\n"]
+pub type cef_component_update_callback_t = _cef_component_update_callback_t;
+#[doc = "\n Structure representing a snapshot of a component's state at the time of\n retrieval. To get updated information, retrieve a new cef_component_t object\n via cef_component_updater_t::GetComponentByID or GetComponents. The\n functions of this structure may be called on any thread.\n\n NOTE: This struct is allocated DLL-side.\n"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _cef_component_t {
+    #[doc = "\n Base structure.\n"]
+    pub base: cef_base_ref_counted_t,
+    #[doc = "\n Returns the unique identifier for this component.\n"]
+    pub get_id: ::std::option::Option<
+        unsafe extern "C" fn(self_: *mut _cef_component_t) -> cef_string_userfree_t,
+    >,
+    #[doc = "\n Returns the human-readable name of this component. Returns an NULL string\n if the component is not installed.\n"]
+    pub get_name: ::std::option::Option<
+        unsafe extern "C" fn(self_: *mut _cef_component_t) -> cef_string_userfree_t,
+    >,
+    #[doc = "\n Returns the version of this component as a string (e.g., \"1.2.3.4\").\n Returns an NULL string if the component is not installed.\n"]
+    pub get_version: ::std::option::Option<
+        unsafe extern "C" fn(self_: *mut _cef_component_t) -> cef_string_userfree_t,
+    >,
+    #[doc = "\n Returns the state of this component at the time this object was created. A\n component is considered installed when its state is one of:\n CEF_COMPONENT_STATE_UPDATED, CEF_COMPONENT_STATE_UP_TO_DATE, or\n CEF_COMPONENT_STATE_RUN.\n"]
+    pub get_state: ::std::option::Option<
+        unsafe extern "C" fn(self_: *mut _cef_component_t) -> cef_component_state_t,
+    >,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of _cef_component_t"][::std::mem::size_of::<_cef_component_t>() - 72usize];
+    ["Alignment of _cef_component_t"][::std::mem::align_of::<_cef_component_t>() - 8usize];
+    ["Offset of field: _cef_component_t::base"]
+        [::std::mem::offset_of!(_cef_component_t, base) - 0usize];
+    ["Offset of field: _cef_component_t::get_id"]
+        [::std::mem::offset_of!(_cef_component_t, get_id) - 40usize];
+    ["Offset of field: _cef_component_t::get_name"]
+        [::std::mem::offset_of!(_cef_component_t, get_name) - 48usize];
+    ["Offset of field: _cef_component_t::get_version"]
+        [::std::mem::offset_of!(_cef_component_t, get_version) - 56usize];
+    ["Offset of field: _cef_component_t::get_state"]
+        [::std::mem::offset_of!(_cef_component_t, get_state) - 64usize];
+};
+#[doc = "\n Structure representing a snapshot of a component's state at the time of\n retrieval. To get updated information, retrieve a new cef_component_t object\n via cef_component_updater_t::GetComponentByID or GetComponents. The\n functions of this structure may be called on any thread.\n\n NOTE: This struct is allocated DLL-side.\n"]
+pub type cef_component_t = _cef_component_t;
+#[doc = "\n This structure provides access to Chromium's component updater service,\n allowing clients to discover registered components and trigger on-demand\n updates. The functions of this structure may only be called on the browser\n process UI thread. If the CEF context is not initialized or the component\n updater service is not available, functions will return safe defaults (0,\n nullptr, or NULL).\n\n NOTE: This struct is allocated DLL-side.\n"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _cef_component_updater_t {
+    #[doc = "\n Base structure.\n"]
+    pub base: cef_base_ref_counted_t,
+    #[doc = "\n Returns the number of registered components, or 0 if the service is not\n available.\n"]
+    pub get_component_count:
+        ::std::option::Option<unsafe extern "C" fn(self_: *mut _cef_component_updater_t) -> usize>,
+    #[doc = "\n Populates |components| with all registered components. Any existing\n contents will be cleared first.\n"]
+    pub get_components: ::std::option::Option<
+        unsafe extern "C" fn(
+            self_: *mut _cef_component_updater_t,
+            componentsCount: *mut usize,
+            components: *mut *mut _cef_component_t,
+        ),
+    >,
+    #[doc = "\n Returns the component with the specified |component_id|, or nullptr if not\n found or the service is not available.\n"]
+    pub get_component_by_id: ::std::option::Option<
+        unsafe extern "C" fn(
+            self_: *mut _cef_component_updater_t,
+            component_id: *const cef_string_t,
+        ) -> *mut _cef_component_t,
+    >,
+    #[doc = "\n Triggers an on-demand update for the component with the specified\n |component_id|. |priority| specifies whether the update should be\n processed in the background or foreground. Use\n CEF_COMPONENT_UPDATE_PRIORITY_FOREGROUND for user-initiated updates.\n\n |callback| will be called asynchronously on the UI thread when the update\n operation completes. The callback is always executed, including when the\n component is already up-to-date (returns CEF_COMPONENT_UPDATE_ERROR_NONE),\n when the requested component doesn't exist, or when the service is\n unavailable (returns CEF_COMPONENT_UPDATE_ERROR_SERVICE_ERROR). The\n callback may be nullptr if no notification is needed.\n"]
+    pub update: ::std::option::Option<
+        unsafe extern "C" fn(
+            self_: *mut _cef_component_updater_t,
+            component_id: *const cef_string_t,
+            priority: cef_component_update_priority_t,
+            callback: *mut _cef_component_update_callback_t,
+        ),
+    >,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of _cef_component_updater_t"]
+        [::std::mem::size_of::<_cef_component_updater_t>() - 72usize];
+    ["Alignment of _cef_component_updater_t"]
+        [::std::mem::align_of::<_cef_component_updater_t>() - 8usize];
+    ["Offset of field: _cef_component_updater_t::base"]
+        [::std::mem::offset_of!(_cef_component_updater_t, base) - 0usize];
+    ["Offset of field: _cef_component_updater_t::get_component_count"]
+        [::std::mem::offset_of!(_cef_component_updater_t, get_component_count) - 40usize];
+    ["Offset of field: _cef_component_updater_t::get_components"]
+        [::std::mem::offset_of!(_cef_component_updater_t, get_components) - 48usize];
+    ["Offset of field: _cef_component_updater_t::get_component_by_id"]
+        [::std::mem::offset_of!(_cef_component_updater_t, get_component_by_id) - 56usize];
+    ["Offset of field: _cef_component_updater_t::update"]
+        [::std::mem::offset_of!(_cef_component_updater_t, update) - 64usize];
+};
+#[doc = "\n This structure provides access to Chromium's component updater service,\n allowing clients to discover registered components and trigger on-demand\n updates. The functions of this structure may only be called on the browser\n process UI thread. If the CEF context is not initialized or the component\n updater service is not available, functions will return safe defaults (0,\n nullptr, or NULL).\n\n NOTE: This struct is allocated DLL-side.\n"]
+pub type cef_component_updater_t = _cef_component_updater_t;
+unsafe extern "C" {
+    #[doc = "\n Returns the global cef_component_updater_t singleton. Returns nullptr if\n called from the incorrect thread.\n"]
+    pub fn cef_component_updater_get() -> *mut cef_component_updater_t;
 }
 unsafe extern "C" {
     #[doc = "\n Crash reporting is configured using an INI-style config file named\n \"crash_reporter.cfg\". On Windows and Linux this file must be placed next to\n the main application executable. On macOS this file must be placed in the\n top-level app bundle Resources directory (e.g.\n \"<appname>.app/Contents/Resources\"). File contents are as follows:\n\n <pre>\n  # Comments start with a hash character and must be on their own line.\n\n  [Config]\n  ProductName=<Value of the \"prod\" crash key; defaults to \"cef\">\n  ProductVersion=<Value of the \"ver\" crash key; defaults to the CEF version>\n  AppName=<Windows only; App-specific folder name component for storing crash\n           information; default to \"CEF\">\n  ExternalHandler=<Windows only; Name of the external handler exe to use\n                   instead of re-launching the main exe; default to empty>\n  BrowserCrashForwardingEnabled=<macOS only; True if browser process crashes\n                                 should be forwarded to the system crash\n                                 reporter; default to false>\n  ServerURL=<crash server URL; default to empty>\n  RateLimitEnabled=<True if uploads should be rate limited; default to true>\n  MaxUploadsPerDay=<Max uploads per 24 hours, used if rate limit is enabled;\n                    default to 5>\n  MaxDatabaseSizeInMb=<Total crash report disk usage greater than this value\n                       will cause older reports to be deleted; default to 20>\n  MaxDatabaseAgeInDays=<Crash reports older than this value will be deleted;\n                        default to 5>\n\n  [CrashKeys]\n  my_key1=<small|medium|large>\n  my_key2=<small|medium|large>\n </pre>\n\n <b>Config section:</b>\n\n If \"ProductName\" and/or \"ProductVersion\" are set then the specified values\n will be included in the crash dump metadata. On macOS if these values are\n set to NULL then they will be retrieved from the Info.plist file using the\n \"CFBundleName\" and \"CFBundleShortVersionString\" keys respectively.\n\n If \"AppName\" is set on Windows then crash report information (metrics,\n database and dumps) will be stored locally on disk under the\n \"C:\\Users\\[CurrentUser]\\AppData\\Local\\[AppName]\\User Data\" folder. On other\n platforms the cef_settings_t.root_cache_path value will be used.\n\n If \"ExternalHandler\" is set on Windows then the specified exe will be\n launched as the crashpad-handler instead of re-launching the main process\n exe. The value can be an absolute path or a path relative to the main exe\n directory. On Linux the cef_settings_t.browser_subprocess_path value will be\n used. On macOS the existing subprocess app bundle will be used.\n\n If \"BrowserCrashForwardingEnabled\" is set to true (1) on macOS then browser\n process crashes will be forwarded to the system crash reporter. This results\n in the crash UI dialog being displayed to the user and crash reports being\n logged under \"~/Library/Logs/DiagnosticReports\". Forwarding of crash reports\n from non-browser processes and Debug builds is always disabled.\n\n If \"ServerURL\" is set then crashes will be uploaded as a multi-part POST\n request to the specified URL. Otherwise, reports will only be stored locally\n on disk.\n\n If \"RateLimitEnabled\" is set to true (1) then crash report uploads will be\n rate limited as follows:\n  1. If \"MaxUploadsPerDay\" is set to a positive value then at most the\n     specified number of crashes will be uploaded in each 24 hour period.\n  2. If crash upload fails due to a network or server error then an\n     incremental backoff delay up to a maximum of 24 hours will be applied\n     for retries.\n  3. If a backoff delay is applied and \"MaxUploadsPerDay\" is > 1 then the\n     \"MaxUploadsPerDay\" value will be reduced to 1 until the client is\n     restarted. This helps to avoid an upload flood when the network or\n     server error is resolved.\n Rate limiting is not supported on Linux.\n\n If \"MaxDatabaseSizeInMb\" is set to a positive value then crash report\n storage on disk will be limited to that size in megabytes. For example, on\n Windows each dump is about 600KB so a \"MaxDatabaseSizeInMb\" value of 20\n equates to about 34 crash reports stored on disk. Not supported on Linux.\n\n If \"MaxDatabaseAgeInDays\" is set to a positive value then crash reports\n older than the specified age in days will be deleted. Not supported on\n Linux.\n\n <b>CrashKeys section:</b>\n\n A maximum of 26 crash keys of each size can be specified for use by the\n application. Crash key values will be truncated based on the specified size\n (small = 64 bytes, medium = 256 bytes, large = 1024 bytes). The value of\n crash keys can be set from any thread or process using the\n CefSetCrashKeyValue function. These key/value pairs will be sent to the\n crash server along with the crash dump file.\n"]
@@ -15454,11 +15743,18 @@ pub struct _cef_browser_view_delegate_t {
             browser_view: *mut _cef_browser_view_t,
         ) -> ::std::os::raw::c_int,
     >,
+    #[doc = "\n Return true (1) to allow opening Document picture-in-picture without user\n activation. Default is false (0) (user activation required).\n"]
+    pub allow_picture_in_picture_without_user_activation: ::std::option::Option<
+        unsafe extern "C" fn(
+            self_: *mut _cef_browser_view_delegate_t,
+            browser_view: *mut _cef_browser_view_t,
+        ) -> ::std::os::raw::c_int,
+    >,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of _cef_browser_view_delegate_t"]
-        [::std::mem::size_of::<_cef_browser_view_delegate_t>() - 200usize];
+        [::std::mem::size_of::<_cef_browser_view_delegate_t>() - 208usize];
     ["Alignment of _cef_browser_view_delegate_t"]
         [::std::mem::align_of::<_cef_browser_view_delegate_t>() - 8usize];
     ["Offset of field: _cef_browser_view_delegate_t::base"]
@@ -15490,6 +15786,7 @@ const _: () = {
         allow_move_for_picture_in_picture
     )
         - 192usize];
+    ["Offset of field: _cef_browser_view_delegate_t::allow_picture_in_picture_without_user_activation"] [:: std :: mem :: offset_of ! (_cef_browser_view_delegate_t , allow_picture_in_picture_without_user_activation) - 200usize] ;
 };
 #[doc = "\n Implement this structure to handle BrowserView events. The functions of this\n structure will be called on the browser process UI thread unless otherwise\n indicated.\n\n NOTE: This struct is allocated client-side.\n"]
 pub type cef_browser_view_delegate_t = _cef_browser_view_delegate_t;
@@ -15976,7 +16273,7 @@ const _: () = {
 };
 #[doc = "\n Implement this structure to handle Button events. The functions of this\n structure will be called on the browser process UI thread unless otherwise\n indicated.\n\n NOTE: This struct is allocated client-side.\n"]
 pub type cef_button_delegate_t = _cef_button_delegate_t;
-#[doc = "\n This structure typically, but not always, corresponds to a physical display\n connected to the system. A fake Display may exist on a headless system, or a\n Display may correspond to a remote, virtual display. All size and position\n values are in density independent pixel (DIP) coordinates unless otherwise\n indicated. Methods must be called on the browser process UI thread unless\n otherwise indicated.\n\n For details on coordinate systems and usage see\n https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage#markdown-\n header-coordinate-systems\n\n NOTE: This struct is allocated DLL-side.\n"]
+#[doc = "\n This structure typically, but not always, corresponds to a physical display\n connected to the system. A fake Display may exist on a headless system, or a\n Display may correspond to a remote, virtual display. All size and position\n values are in density independent pixel (DIP) coordinates unless otherwise\n indicated. Methods must be called on the browser process UI thread unless\n otherwise indicated.\n\n For details on coordinate systems and usage see\n https://chromiumembedded.github.io/cef/general_usage#coordinate-systems\n\n NOTE: This struct is allocated DLL-side.\n"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _cef_display_t {
@@ -16027,7 +16324,7 @@ const _: () = {
     ["Offset of field: _cef_display_t::get_rotation"]
         [::std::mem::offset_of!(_cef_display_t, get_rotation) - 88usize];
 };
-#[doc = "\n This structure typically, but not always, corresponds to a physical display\n connected to the system. A fake Display may exist on a headless system, or a\n Display may correspond to a remote, virtual display. All size and position\n values are in density independent pixel (DIP) coordinates unless otherwise\n indicated. Methods must be called on the browser process UI thread unless\n otherwise indicated.\n\n For details on coordinate systems and usage see\n https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage#markdown-\n header-coordinate-systems\n\n NOTE: This struct is allocated DLL-side.\n"]
+#[doc = "\n This structure typically, but not always, corresponds to a physical display\n connected to the system. A fake Display may exist on a headless system, or a\n Display may correspond to a remote, virtual display. All size and position\n values are in density independent pixel (DIP) coordinates unless otherwise\n indicated. Methods must be called on the browser process UI thread unless\n otherwise indicated.\n\n For details on coordinate systems and usage see\n https://chromiumembedded.github.io/cef/general_usage#coordinate-systems\n\n NOTE: This struct is allocated DLL-side.\n"]
 pub type cef_display_t = _cef_display_t;
 unsafe extern "C" {
     #[doc = "\n Returns the primary Display.\n"]
@@ -17337,4 +17634,1557 @@ pub type cef_window_t = _cef_window_t;
 unsafe extern "C" {
     #[doc = "\n Create a new Window.\n"]
     pub fn cef_window_create_top_level(delegate: *mut _cef_window_delegate_t) -> *mut cef_window_t;
+}
+impl cef_color_id_t {
+    pub const CEF_ColorRefPrimary0: cef_color_id_t = cef_color_id_t::CEF_UiColorsStart;
+}
+impl cef_color_id_t {
+    pub const CEF_ComponentsColorsStart: cef_color_id_t = cef_color_id_t::CEF_UiColorsEnd;
+}
+impl cef_color_id_t {
+    pub const CEF_ChromeColorsStart: cef_color_id_t = cef_color_id_t::CEF_ComponentsColorsEnd;
+}
+impl cef_color_id_t {
+    pub const CEF_ColorAppMenuHighlightSeverityLow: cef_color_id_t =
+        cef_color_id_t::CEF_ComponentsColorsEnd;
+}
+#[repr(u32)]
+#[non_exhaustive]
+#[doc = "\n All input, intermediary, and output colors known to CEF/Chromium.\n Clients can optionally extend this enum with additional values.\n Clients define enum values from CEF_ChromeColorsEnd. Values named\n beginning with \"CEF_Color\" represent the actual colors; the rest are\n markers.\n"]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum cef_color_id_t {
+    CEF_UiColorsStart = 0,
+    CEF_ColorRefPrimary10 = 1,
+    CEF_ColorRefPrimary20 = 2,
+    CEF_ColorRefPrimary25 = 3,
+    CEF_ColorRefPrimary30 = 4,
+    CEF_ColorRefPrimary40 = 5,
+    CEF_ColorRefPrimary50 = 6,
+    CEF_ColorRefPrimary60 = 7,
+    CEF_ColorRefPrimary70 = 8,
+    CEF_ColorRefPrimary80 = 9,
+    CEF_ColorRefPrimary90 = 10,
+    CEF_ColorRefPrimary95 = 11,
+    CEF_ColorRefPrimary99 = 12,
+    CEF_ColorRefPrimary100 = 13,
+    CEF_ColorRefSecondary0 = 14,
+    CEF_ColorRefSecondary10 = 15,
+    CEF_ColorRefSecondary12 = 16,
+    CEF_ColorRefSecondary15 = 17,
+    CEF_ColorRefSecondary20 = 18,
+    CEF_ColorRefSecondary25 = 19,
+    CEF_ColorRefSecondary30 = 20,
+    CEF_ColorRefSecondary35 = 21,
+    CEF_ColorRefSecondary40 = 22,
+    CEF_ColorRefSecondary50 = 23,
+    CEF_ColorRefSecondary60 = 24,
+    CEF_ColorRefSecondary70 = 25,
+    CEF_ColorRefSecondary80 = 26,
+    CEF_ColorRefSecondary90 = 27,
+    CEF_ColorRefSecondary95 = 28,
+    CEF_ColorRefSecondary99 = 29,
+    CEF_ColorRefSecondary100 = 30,
+    CEF_ColorRefTertiary0 = 31,
+    CEF_ColorRefTertiary10 = 32,
+    CEF_ColorRefTertiary20 = 33,
+    CEF_ColorRefTertiary30 = 34,
+    CEF_ColorRefTertiary40 = 35,
+    CEF_ColorRefTertiary50 = 36,
+    CEF_ColorRefTertiary60 = 37,
+    CEF_ColorRefTertiary70 = 38,
+    CEF_ColorRefTertiary80 = 39,
+    CEF_ColorRefTertiary90 = 40,
+    CEF_ColorRefTertiary95 = 41,
+    CEF_ColorRefTertiary99 = 42,
+    CEF_ColorRefTertiary100 = 43,
+    CEF_ColorRefError0 = 44,
+    CEF_ColorRefError10 = 45,
+    CEF_ColorRefError20 = 46,
+    CEF_ColorRefError30 = 47,
+    CEF_ColorRefError40 = 48,
+    CEF_ColorRefError50 = 49,
+    CEF_ColorRefError60 = 50,
+    CEF_ColorRefError70 = 51,
+    CEF_ColorRefError80 = 52,
+    CEF_ColorRefError90 = 53,
+    CEF_ColorRefError95 = 54,
+    CEF_ColorRefError99 = 55,
+    CEF_ColorRefError100 = 56,
+    CEF_ColorRefNeutral0 = 57,
+    CEF_ColorRefNeutral4 = 58,
+    CEF_ColorRefNeutral6 = 59,
+    CEF_ColorRefNeutral8 = 60,
+    CEF_ColorRefNeutral10 = 61,
+    CEF_ColorRefNeutral12 = 62,
+    CEF_ColorRefNeutral15 = 63,
+    CEF_ColorRefNeutral17 = 64,
+    CEF_ColorRefNeutral20 = 65,
+    CEF_ColorRefNeutral22 = 66,
+    CEF_ColorRefNeutral24 = 67,
+    CEF_ColorRefNeutral25 = 68,
+    CEF_ColorRefNeutral30 = 69,
+    CEF_ColorRefNeutral40 = 70,
+    CEF_ColorRefNeutral50 = 71,
+    CEF_ColorRefNeutral60 = 72,
+    CEF_ColorRefNeutral70 = 73,
+    CEF_ColorRefNeutral80 = 74,
+    CEF_ColorRefNeutral87 = 75,
+    CEF_ColorRefNeutral90 = 76,
+    CEF_ColorRefNeutral92 = 77,
+    CEF_ColorRefNeutral94 = 78,
+    CEF_ColorRefNeutral95 = 79,
+    CEF_ColorRefNeutral96 = 80,
+    CEF_ColorRefNeutral98 = 81,
+    CEF_ColorRefNeutral99 = 82,
+    CEF_ColorRefNeutral100 = 83,
+    CEF_ColorRefNeutralVariant0 = 84,
+    CEF_ColorRefNeutralVariant10 = 85,
+    CEF_ColorRefNeutralVariant15 = 86,
+    CEF_ColorRefNeutralVariant20 = 87,
+    CEF_ColorRefNeutralVariant30 = 88,
+    CEF_ColorRefNeutralVariant40 = 89,
+    CEF_ColorRefNeutralVariant50 = 90,
+    CEF_ColorRefNeutralVariant60 = 91,
+    CEF_ColorRefNeutralVariant70 = 92,
+    CEF_ColorRefNeutralVariant80 = 93,
+    CEF_ColorRefNeutralVariant90 = 94,
+    CEF_ColorRefNeutralVariant95 = 95,
+    CEF_ColorRefNeutralVariant99 = 96,
+    CEF_ColorRefNeutralVariant100 = 97,
+    CEF_ColorSysPrimary = 98,
+    CEF_ColorSysOnPrimary = 99,
+    CEF_ColorSysPrimaryContainer = 100,
+    CEF_ColorSysOnPrimaryContainer = 101,
+    CEF_ColorSysSecondary = 102,
+    CEF_ColorSysOnSecondary = 103,
+    CEF_ColorSysSecondaryContainer = 104,
+    CEF_ColorSysOnSecondaryContainer = 105,
+    CEF_ColorSysTertiary = 106,
+    CEF_ColorSysOnTertiary = 107,
+    CEF_ColorSysTertiaryContainer = 108,
+    CEF_ColorSysOnTertiaryContainer = 109,
+    CEF_ColorSysError = 110,
+    CEF_ColorSysOnError = 111,
+    CEF_ColorSysErrorContainer = 112,
+    CEF_ColorSysOnErrorContainer = 113,
+    CEF_ColorSysOnSurface = 114,
+    CEF_ColorSysOnSurfaceVariant = 115,
+    CEF_ColorSysOutline = 116,
+    CEF_ColorSysSurfaceVariant = 117,
+    CEF_ColorSysBlack = 118,
+    CEF_ColorSysWhite = 119,
+    CEF_ColorSysInversePrimary = 120,
+    CEF_ColorSysInverseOnSurface = 121,
+    CEF_ColorSysInverseSurface = 122,
+    CEF_ColorSysInverseSurfacePrimary = 123,
+    CEF_ColorSysSurface = 124,
+    CEF_ColorSysSurface1 = 125,
+    CEF_ColorSysSurface2 = 126,
+    CEF_ColorSysSurface3 = 127,
+    CEF_ColorSysSurface4 = 128,
+    CEF_ColorSysSurface5 = 129,
+    CEF_ColorSysSurfaceNumberedForeground = 130,
+    CEF_ColorSysOnSurfaceSecondary = 131,
+    CEF_ColorSysOnSurfaceSubtle = 132,
+    CEF_ColorSysOnSurfacePrimary = 133,
+    CEF_ColorSysOnSurfacePrimaryInactive = 134,
+    CEF_ColorSysTonalContainer = 135,
+    CEF_ColorSysOnTonalContainer = 136,
+    CEF_ColorSysBaseTonalContainer = 137,
+    CEF_ColorSysOnBaseTonalContainer = 138,
+    CEF_ColorSysTonalOutline = 139,
+    CEF_ColorSysNeutralOutline = 140,
+    CEF_ColorSysNeutralContainer = 141,
+    CEF_ColorSysDivider = 142,
+    CEF_ColorSysBase = 143,
+    CEF_ColorSysBaseContainer = 144,
+    CEF_ColorSysBaseContainerElevated = 145,
+    CEF_ColorSysHeader = 146,
+    CEF_ColorSysHeaderInactive = 147,
+    CEF_ColorSysHeaderContainer = 148,
+    CEF_ColorSysHeaderContainerInactive = 149,
+    CEF_ColorSysOnHeaderDivider = 150,
+    CEF_ColorSysOnHeaderDividerInactive = 151,
+    CEF_ColorSysOnHeaderPrimary = 152,
+    CEF_ColorSysOnHeaderPrimaryInactive = 153,
+    CEF_ColorSysStateHoverOnProminent = 154,
+    CEF_ColorSysStateHoverOnSubtle = 155,
+    CEF_ColorSysStateRippleNeutralOnProminent = 156,
+    CEF_ColorSysStateRippleNeutralOnSubtle = 157,
+    CEF_ColorSysStateRipplePrimary = 158,
+    CEF_ColorSysStateFocusRing = 159,
+    CEF_ColorSysStateFocusRingInverse = 160,
+    CEF_ColorSysStateTextHighlight = 161,
+    CEF_ColorSysStateOnTextHighlight = 162,
+    CEF_ColorSysStateFocusHighlight = 163,
+    CEF_ColorSysStateDisabled = 164,
+    CEF_ColorSysStateDisabledContainer = 165,
+    CEF_ColorSysStateHoverDimBlendProtection = 166,
+    CEF_ColorSysStateHoverBrightBlendProtection = 167,
+    CEF_ColorSysStateInactiveRing = 168,
+    CEF_ColorSysStateScrim = 169,
+    CEF_ColorSysStateOnHeaderHover = 170,
+    CEF_ColorSysStateHeaderHover = 171,
+    CEF_ColorSysStateHeaderHoverInactive = 172,
+    CEF_ColorSysStateHeaderSelect = 173,
+    CEF_ColorSysShadow = 174,
+    CEF_ColorSysGradientPrimary = 175,
+    CEF_ColorSysGradientTertiary = 176,
+    CEF_ColorSysIlloPrimaryMin = 177,
+    CEF_ColorSysIlloPrimaryLow = 178,
+    CEF_ColorSysIlloPrimaryMid = 179,
+    CEF_ColorSysIlloPrimaryHigh = 180,
+    CEF_ColorSysIlloPrimaryMax = 181,
+    CEF_ColorSysIlloSecondaryMin = 182,
+    CEF_ColorSysIlloSecondaryLow = 183,
+    CEF_ColorSysIlloSecondaryMid = 184,
+    CEF_ColorSysIlloSecondaryHigh = 185,
+    CEF_ColorSysIlloSecondaryMax = 186,
+    CEF_ColorSysIlloTertiaryMin = 187,
+    CEF_ColorSysIlloTertiaryLow = 188,
+    CEF_ColorSysIlloTertiaryMid = 189,
+    CEF_ColorSysIlloTertiaryHigh = 190,
+    CEF_ColorSysIlloTertiaryMax = 191,
+    CEF_ColorSysIlloNeutralMin = 192,
+    CEF_ColorSysIlloNeutralLow = 193,
+    CEF_ColorSysIlloNeutralMid = 194,
+    CEF_ColorSysIlloNeutralHigh = 195,
+    CEF_ColorSysIlloNeutralMax = 196,
+    CEF_ColorSysActorUiBorder = 197,
+    CEF_ColorSysActorUiGradientStart = 198,
+    CEF_ColorSysActorUiGradientMiddle = 199,
+    CEF_ColorSysActorUiGradientEnd = 200,
+    CEF_ColorGlicTabUnderline1 = 201,
+    CEF_ColorGlicTabUnderline2 = 202,
+    CEF_ColorGlicTabUnderline3 = 203,
+    CEF_ColorSysAiIllustrationShapeSurface1 = 204,
+    CEF_ColorSysAiIllustrationShapeSurface2 = 205,
+    CEF_ColorSysAiIllustrationShapeSurfaceGradientStart = 206,
+    CEF_ColorSysAiIllustrationShapeSurfaceGradientEnd = 207,
+    CEF_ColorSysOmniboxContainer = 208,
+    CEF_ColorSysStateHover = 209,
+    CEF_ColorSysStateFocus = 210,
+    CEF_ColorSysStatePressed = 211,
+    CEF_ColorAccent = 212,
+    CEF_ColorAccentWithGuaranteedContrastAtopPrimaryBackground = 213,
+    CEF_ColorAlertHighSeverity = 214,
+    CEF_ColorAlertLowSeverity = 215,
+    CEF_ColorAlertMediumSeverityIcon = 216,
+    CEF_ColorAlertMediumSeverityText = 217,
+    CEF_ColorDisabledForeground = 218,
+    CEF_ColorEndpointBackground = 219,
+    CEF_ColorEndpointForeground = 220,
+    CEF_ColorItemHighlight = 221,
+    CEF_ColorItemSelectionBackground = 222,
+    CEF_ColorMenuSelectionBackground = 223,
+    CEF_ColorMidground = 224,
+    CEF_ColorPrimaryBackground = 225,
+    CEF_ColorPrimaryForeground = 226,
+    CEF_ColorSecondaryForeground = 227,
+    CEF_ColorSubtleAccent = 228,
+    CEF_ColorSubtleEmphasisBackground = 229,
+    CEF_ColorTextSelectionBackground = 230,
+    CEF_ColorTextSelectionForeground = 231,
+    CEF_ColorAppMenuProfileRowBackground = 232,
+    CEF_ColorAppMenuProfileRowChipBackground = 233,
+    CEF_ColorAppMenuProfileRowChipHovered = 234,
+    CEF_ColorAppMenuRowBackgroundHovered = 235,
+    CEF_ColorAppMenuUpgradeRowBackground = 236,
+    CEF_ColorAppMenuUpgradeRowSubstringForeground = 237,
+    CEF_ColorAvatarIconGuest = 238,
+    CEF_ColorAvatarIconIncognito = 239,
+    CEF_ColorBadgeBackground = 240,
+    CEF_ColorBadgeForeground = 241,
+    CEF_ColorBadgeInCocoaMenuBackground = 242,
+    CEF_ColorBadgeInCocoaMenuForeground = 243,
+    CEF_ColorBubbleBackground = 244,
+    CEF_ColorBubbleBorder = 245,
+    CEF_ColorBubbleBorderShadowLarge = 246,
+    CEF_ColorBubbleBorderShadowSmall = 247,
+    CEF_ColorBubbleFooterBackground = 248,
+    CEF_ColorBubbleFooterBorder = 249,
+    CEF_ColorButtonFeatureAttentionHighlight = 250,
+    CEF_ColorButtonBackground = 251,
+    CEF_ColorButtonBackgroundPressed = 252,
+    CEF_ColorButtonBackgroundProminent = 253,
+    CEF_ColorButtonBackgroundProminentDisabled = 254,
+    CEF_ColorButtonBackgroundProminentFocused = 255,
+    CEF_ColorButtonBackgroundTonal = 256,
+    CEF_ColorButtonBackgroundTonalDisabled = 257,
+    CEF_ColorButtonBackgroundTonalFocused = 258,
+    CEF_ColorButtonBackgroundWithAttention = 259,
+    CEF_ColorButtonBorder = 260,
+    CEF_ColorButtonBorderDisabled = 261,
+    CEF_ColorButtonForeground = 262,
+    CEF_ColorButtonForegroundDisabled = 263,
+    CEF_ColorButtonForegroundProminent = 264,
+    CEF_ColorButtonForegroundTonal = 265,
+    CEF_ColorButtonHoverBackgroundText = 266,
+    CEF_ColorMultitaskMenuNudgePulse = 267,
+    CEF_ColorCheckboxCheck = 268,
+    CEF_ColorCheckboxCheckDisabled = 269,
+    CEF_ColorCheckboxContainer = 270,
+    CEF_ColorCheckboxContainerDisabled = 271,
+    CEF_ColorCheckboxOutline = 272,
+    CEF_ColorCheckboxOutlineDisabled = 273,
+    CEF_ColorCheckboxForegroundChecked = 274,
+    CEF_ColorCheckboxForegroundUnchecked = 275,
+    CEF_ColorChipBackgroundHover = 276,
+    CEF_ColorChipBackgroundSelected = 277,
+    CEF_ColorChipBorder = 278,
+    CEF_ColorChipForeground = 279,
+    CEF_ColorChipForegroundSelected = 280,
+    CEF_ColorChipIcon = 281,
+    CEF_ColorChipIconSelected = 282,
+    CEF_ColorComboboxBackground = 283,
+    CEF_ColorComboboxBackgroundDisabled = 284,
+    CEF_ColorComboboxContainerOutline = 285,
+    CEF_ColorComboboxInkDropHovered = 286,
+    CEF_ColorComboboxInkDropRipple = 287,
+    CEF_ColorCssSystemActiveText = 288,
+    CEF_ColorCssSystemBtnFace = 289,
+    CEF_ColorCssSystemBtnText = 290,
+    CEF_ColorCssSystemField = 291,
+    CEF_ColorCssSystemFieldText = 292,
+    CEF_ColorCssSystemGrayText = 293,
+    CEF_ColorCssSystemHighlight = 294,
+    CEF_ColorCssSystemHighlightText = 295,
+    CEF_ColorCssSystemHotlight = 296,
+    CEF_ColorCssSystemLinkText = 297,
+    CEF_ColorCssSystemMenuHilight = 298,
+    CEF_ColorCssSystemScrollbar = 299,
+    CEF_ColorCssSystemVisitedText = 300,
+    CEF_ColorCssSystemWindow = 301,
+    CEF_ColorCssSystemWindowText = 302,
+    CEF_ColorCustomFrameCaptionForeground = 303,
+    CEF_ColorDebugBoundsOutline = 304,
+    CEF_ColorDebugContentOutline = 305,
+    CEF_ColorDialogBackground = 306,
+    CEF_ColorDialogForeground = 307,
+    CEF_ColorDropdownBackground = 308,
+    CEF_ColorDropdownBackgroundSelected = 309,
+    CEF_ColorDropdownForeground = 310,
+    CEF_ColorDropdownForegroundSelected = 311,
+    CEF_ColorFocusableBorderFocused = 312,
+    CEF_ColorFocusableBorderUnfocused = 313,
+    CEF_ColorFrameActive = 314,
+    CEF_ColorFrameActiveUnthemed = 315,
+    CEF_ColorFrameCaptionButtonUnfocused = 316,
+    CEF_ColorFrameInactive = 317,
+    CEF_ColorHelpIconActive = 318,
+    CEF_ColorHelpIconInactive = 319,
+    CEF_ColorHistoryClustersSidePanelDivider = 320,
+    CEF_ColorHistoryClustersSidePanelDialogBackground = 321,
+    CEF_ColorHistoryClustersSidePanelDialogDivider = 322,
+    CEF_ColorHistoryClustersSidePanelDialogPrimaryForeground = 323,
+    CEF_ColorHistoryClustersSidePanelDialogSecondaryForeground = 324,
+    CEF_ColorHistoryClustersSidePanelCardSecondaryForeground = 325,
+    CEF_ColorIcon = 326,
+    CEF_ColorIconDisabled = 327,
+    CEF_ColorIconHovered = 328,
+    CEF_ColorIconSecondary = 329,
+    CEF_ColorInfoBarIcon = 330,
+    CEF_ColorLabelForeground = 331,
+    CEF_ColorLabelForegroundDisabled = 332,
+    CEF_ColorLabelForegroundSecondary = 333,
+    CEF_ColorLabelSelectionBackground = 334,
+    CEF_ColorLabelSelectionForeground = 335,
+    CEF_ColorLinkForeground = 336,
+    CEF_ColorLinkForegroundDefault = 337,
+    CEF_ColorLinkForegroundDisabled = 338,
+    CEF_ColorLinkForegroundOnBubbleFooter = 339,
+    CEF_ColorLinkForegroundPressed = 340,
+    CEF_ColorLinkForegroundPressedDefault = 341,
+    CEF_ColorLinkForegroundPressedOnBubbleFooter = 342,
+    CEF_ColorListItemFolderIconBackground = 343,
+    CEF_ColorListItemFolderIconForeground = 344,
+    CEF_ColorListItemUrlFaviconBackground = 345,
+    CEF_ColorLiveCaptionBubbleBackgroundDefault = 346,
+    CEF_ColorLiveCaptionBubbleButtonBackground = 347,
+    CEF_ColorLiveCaptionBubbleButtonIcon = 348,
+    CEF_ColorLiveCaptionBubbleButtonIconDisabled = 349,
+    CEF_ColorLiveCaptionBubbleForegroundDefault = 350,
+    CEF_ColorLiveCaptionBubbleForegroundSecondary = 351,
+    CEF_ColorLiveCaptionBubbleCheckbox = 352,
+    CEF_ColorLiveCaptionBubbleLink = 353,
+    CEF_ColorLoadingGradientBorder = 354,
+    CEF_ColorLoadingGradientEnd = 355,
+    CEF_ColorLoadingGradientMiddle = 356,
+    CEF_ColorLoadingGradientStart = 357,
+    CEF_ColorMenuBackground = 358,
+    CEF_ColorMenuBorder = 359,
+    CEF_ColorMenuButtonBackground = 360,
+    CEF_ColorMenuButtonBackgroundSelected = 361,
+    CEF_ColorMenuDropmarker = 362,
+    CEF_ColorMenuIcon = 363,
+    CEF_ColorMenuIconDisabled = 364,
+    CEF_ColorMenuIconOnEmphasizedBackground = 365,
+    CEF_ColorMenuItemBackgroundAlertedInitial = 366,
+    CEF_ColorMenuItemBackgroundAlertedTarget = 367,
+    CEF_ColorMenuItemBackgroundHighlighted = 368,
+    CEF_ColorMenuItemBackgroundSelected = 369,
+    CEF_ColorMenuItemForeground = 370,
+    CEF_ColorMenuItemForegroundDisabled = 371,
+    CEF_ColorMenuItemForegroundHighlighted = 372,
+    CEF_ColorMenuItemForegroundSecondary = 373,
+    CEF_ColorMenuItemForegroundSelected = 374,
+    CEF_ColorMenuSeparator = 375,
+    CEF_ColorNotificationActionsBackground = 376,
+    CEF_ColorNotificationBackgroundActive = 377,
+    CEF_ColorNotificationBackgroundInactive = 378,
+    CEF_ColorNotificationHeaderForeground = 379,
+    CEF_ColorNotificationIconBackground = 380,
+    CEF_ColorNotificationIconForeground = 381,
+    CEF_ColorNotificationImageBackground = 382,
+    CEF_ColorNotificationInputBackground = 383,
+    CEF_ColorNotificationInputForeground = 384,
+    CEF_ColorNotificationInputPlaceholderForeground = 385,
+    CEF_ColorOverlayScrollbarFill = 386,
+    CEF_ColorOverlayScrollbarFillHovered = 387,
+    CEF_ColorOverlayScrollbarStroke = 388,
+    CEF_ColorOverlayScrollbarStrokeHovered = 389,
+    CEF_ColorProgressBar = 390,
+    CEF_ColorProgressBarBackground = 391,
+    CEF_ColorProgressBarPaused = 392,
+    CEF_ColorRadioButtonForegroundUnchecked = 393,
+    CEF_ColorRadioButtonForegroundDisabled = 394,
+    CEF_ColorRadioButtonForegroundChecked = 395,
+    CEF_ColorSegmentedButtonBorder = 396,
+    CEF_ColorSegmentedButtonFocus = 397,
+    CEF_ColorSegmentedButtonForegroundChecked = 398,
+    CEF_ColorSegmentedButtonForegroundUnchecked = 399,
+    CEF_ColorSegmentedButtonHover = 400,
+    CEF_ColorSegmentedButtonRipple = 401,
+    CEF_ColorSegmentedButtonChecked = 402,
+    CEF_ColorSeparator = 403,
+    CEF_ColorShadowBase = 404,
+    CEF_ColorShadowValueAmbientShadowElevationFour = 405,
+    CEF_ColorShadowValueAmbientShadowElevationSixteen = 406,
+    CEF_ColorShadowValueAmbientShadowElevationThree = 407,
+    CEF_ColorShadowValueAmbientShadowElevationTwelve = 408,
+    CEF_ColorShadowValueAmbientShadowElevationTwentyFour = 409,
+    CEF_ColorShadowValueKeyShadowElevationFour = 410,
+    CEF_ColorShadowValueKeyShadowElevationSixteen = 411,
+    CEF_ColorShadowValueKeyShadowElevationThree = 412,
+    CEF_ColorShadowValueKeyShadowElevationTwelve = 413,
+    CEF_ColorShadowValueKeyShadowElevationTwentyFour = 414,
+    CEF_ColorSidePanelComboboxBorder = 415,
+    CEF_ColorSidePanelComboboxBackground = 416,
+    CEF_ColorSliderThumb = 417,
+    CEF_ColorSliderThumbMinimal = 418,
+    CEF_ColorSliderTrack = 419,
+    CEF_ColorSliderTrackMinimal = 420,
+    CEF_ColorSyncInfoBackground = 421,
+    CEF_ColorSyncInfoBackgroundError = 422,
+    CEF_ColorSyncInfoBackgroundPaused = 423,
+    CEF_ColorTabBackgroundHighlighted = 424,
+    CEF_ColorTabBackgroundHighlightedFocused = 425,
+    CEF_ColorTabBorderSelected = 426,
+    CEF_ColorTabContentSeparator = 427,
+    CEF_ColorTabForegroundDisabled = 428,
+    CEF_ColorTabForeground = 429,
+    CEF_ColorTabForegroundSelected = 430,
+    CEF_ColorTableBackground = 431,
+    CEF_ColorTableBackgroundAlternate = 432,
+    CEF_ColorTableBackgroundSelectedFocused = 433,
+    CEF_ColorTableBackgroundSelectedUnfocused = 434,
+    CEF_ColorTableForeground = 435,
+    CEF_ColorTableForegroundSelectedFocused = 436,
+    CEF_ColorTableForegroundSelectedUnfocused = 437,
+    CEF_ColorTableGroupingIndicator = 438,
+    CEF_ColorTableHeaderBackground = 439,
+    CEF_ColorTableHeaderForeground = 440,
+    CEF_ColorTableHeaderSeparator = 441,
+    CEF_ColorTableIconBackground = 442,
+    CEF_ColorTableRowHighlight = 443,
+    CEF_ColorSuggestionChipBorder = 444,
+    CEF_ColorSuggestionChipIcon = 445,
+    CEF_ColorTextfieldBackground = 446,
+    CEF_ColorTextfieldBackgroundDisabled = 447,
+    CEF_ColorTextfieldFilledBackground = 448,
+    CEF_ColorTextfieldFilledForegroundInvalid = 449,
+    CEF_ColorTextfieldFilledUnderline = 450,
+    CEF_ColorTextfieldFilledUnderlineFocused = 451,
+    CEF_ColorTextfieldForeground = 452,
+    CEF_ColorTextfieldForegroundDisabled = 453,
+    CEF_ColorTextfieldForegroundIcon = 454,
+    CEF_ColorTextfieldForegroundLabel = 455,
+    CEF_ColorTextfieldForegroundPlaceholderInvalid = 456,
+    CEF_ColorTextfieldForegroundPlaceholder = 457,
+    CEF_ColorTextfieldHover = 458,
+    CEF_ColorTextfieldSelectionBackground = 459,
+    CEF_ColorTextfieldSelectionForeground = 460,
+    CEF_ColorTextfieldOutline = 461,
+    CEF_ColorTextfieldOutlineDisabled = 462,
+    CEF_ColorTextfieldOutlineInvalid = 463,
+    CEF_ColorThemeColorPickerCheckmarkBackground = 464,
+    CEF_ColorThemeColorPickerCheckmarkForeground = 465,
+    CEF_ColorThemeColorPickerCustomColorIconBackground = 466,
+    CEF_ColorThemeColorPickerHueSliderDialogBackground = 467,
+    CEF_ColorThemeColorPickerHueSliderDialogForeground = 468,
+    CEF_ColorThemeColorPickerHueSliderDialogIcon = 469,
+    CEF_ColorThemeColorPickerHueSliderHandle = 470,
+    CEF_ColorThemeColorPickerOptionBackground = 471,
+    CEF_ColorThrobber = 472,
+    CEF_ColorThrobberPreconnect = 473,
+    CEF_ColorToastBackground = 474,
+    CEF_ColorToastBackgroundProminent = 475,
+    CEF_ColorToastButton = 476,
+    CEF_ColorToastForeground = 477,
+    CEF_ColorToggleButtonHover = 478,
+    CEF_ColorToggleButtonPressed = 479,
+    CEF_ColorToggleButtonShadow = 480,
+    CEF_ColorToggleButtonThumbOff = 481,
+    CEF_ColorToggleButtonThumbOffDisabled = 482,
+    CEF_ColorToggleButtonThumbOn = 483,
+    CEF_ColorToggleButtonThumbOnDisabled = 484,
+    CEF_ColorToggleButtonThumbOnHover = 485,
+    CEF_ColorToggleButtonTrackOff = 486,
+    CEF_ColorToggleButtonTrackOffDisabled = 487,
+    CEF_ColorToggleButtonTrackOn = 488,
+    CEF_ColorToggleButtonTrackOnDisabled = 489,
+    CEF_ColorToolbarSearchFieldBackground = 490,
+    CEF_ColorToolbarSearchFieldBackgroundHover = 491,
+    CEF_ColorToolbarSearchFieldBackgroundPressed = 492,
+    CEF_ColorToolbarSearchFieldForeground = 493,
+    CEF_ColorToolbarSearchFieldForegroundPlaceholder = 494,
+    CEF_ColorToolbarSearchFieldIcon = 495,
+    CEF_ColorTooltipBackground = 496,
+    CEF_ColorTooltipForeground = 497,
+    CEF_ColorTreeBackground = 498,
+    CEF_ColorTreeNodeBackgroundSelectedFocused = 499,
+    CEF_ColorTreeNodeBackgroundSelectedUnfocused = 500,
+    CEF_ColorTreeNodeForeground = 501,
+    CEF_ColorTreeNodeForegroundSelectedFocused = 502,
+    CEF_ColorTreeNodeForegroundSelectedUnfocused = 503,
+    CEF_ColorWebNativeControlAccent = 504,
+    CEF_ColorWebNativeControlAccentDisabled = 505,
+    CEF_ColorWebNativeControlAccentHovered = 506,
+    CEF_ColorWebNativeControlAccentPressed = 507,
+    CEF_ColorWebNativeControlAutoCompleteBackground = 508,
+    CEF_ColorWebNativeControlBorder = 509,
+    CEF_ColorWebNativeControlBorderDisabled = 510,
+    CEF_ColorWebNativeControlBorderHovered = 511,
+    CEF_ColorWebNativeControlBorderPressed = 512,
+    CEF_ColorWebNativeControlButtonBorder = 513,
+    CEF_ColorWebNativeControlButtonBorderDisabled = 514,
+    CEF_ColorWebNativeControlButtonBorderHovered = 515,
+    CEF_ColorWebNativeControlButtonBorderPressed = 516,
+    CEF_ColorWebNativeControlButtonFill = 517,
+    CEF_ColorWebNativeControlButtonFillDisabled = 518,
+    CEF_ColorWebNativeControlButtonFillHovered = 519,
+    CEF_ColorWebNativeControlButtonFillPressed = 520,
+    CEF_ColorWebNativeControlCheckboxBackground = 521,
+    CEF_ColorWebNativeControlCheckboxBackgroundDisabled = 522,
+    CEF_ColorWebNativeControlFill = 523,
+    CEF_ColorWebNativeControlFillDisabled = 524,
+    CEF_ColorWebNativeControlFillHovered = 525,
+    CEF_ColorWebNativeControlFillPressed = 526,
+    CEF_ColorWebNativeControlLightenLayer = 527,
+    CEF_ColorWebNativeControlProgressValue = 528,
+    CEF_ColorWebNativeControlScrollbarArrowBackgroundDisabled = 529,
+    CEF_ColorWebNativeControlScrollbarArrowBackgroundHovered = 530,
+    CEF_ColorWebNativeControlScrollbarArrowBackgroundPressed = 531,
+    CEF_ColorWebNativeControlScrollbarArrowForeground = 532,
+    CEF_ColorWebNativeControlScrollbarArrowForegroundDisabled = 533,
+    CEF_ColorWebNativeControlScrollbarArrowForegroundPressed = 534,
+    CEF_ColorWebNativeControlScrollbarCorner = 535,
+    CEF_ColorWebNativeControlScrollbarThumb = 536,
+    CEF_ColorWebNativeControlScrollbarThumbHovered = 537,
+    CEF_ColorWebNativeControlScrollbarThumbOverlayMinimalMode = 538,
+    CEF_ColorWebNativeControlScrollbarThumbPressed = 539,
+    CEF_ColorWebNativeControlScrollbarTrack = 540,
+    CEF_ColorWebNativeControlSlider = 541,
+    CEF_ColorWebNativeControlSliderBorder = 542,
+    CEF_ColorWebNativeControlSliderBorderHovered = 543,
+    CEF_ColorWebNativeControlSliderBorderPressed = 544,
+    CEF_ColorWebNativeControlSliderDisabled = 545,
+    CEF_ColorWebNativeControlSliderHovered = 546,
+    CEF_ColorWebNativeControlSliderPressed = 547,
+    CEF_ColorWindowBackground = 548,
+    CEF_UiColorsEnd = 549,
+    kFullscreenNotificationOpaqueBackgroundColor = 550,
+    kFullscreenNotificationTransparentBackgroundColor = 551,
+    CEF_ComponentsColorsEnd = 552,
+    CEF_ColorAppMenuHighlightSeverityHigh = 553,
+    CEF_ColorAppMenuHighlightSeverityMedium = 554,
+    CEF_ColorAppMenuHighlightDefault = 555,
+    CEF_ColorAppMenuHighlightPrimary = 556,
+    CEF_ColorAppMenuExpandedForegroundDefault = 557,
+    CEF_ColorAppMenuExpandedForegroundPrimary = 558,
+    CEF_ColorAppMenuChipInkDropHover = 559,
+    CEF_ColorAppMenuChipInkDropRipple = 560,
+    CEF_ColorActorUiHandoffButtonBorder = 561,
+    CEF_ColorActorUiOverlayBorder = 562,
+    CEF_ColorActorUiOverlayBorderGlow = 563,
+    CEF_ColorActorUiScrimStart = 564,
+    CEF_ColorActorUiScrimMiddle = 565,
+    CEF_ColorActorUiScrimEnd = 566,
+    CEF_ColorActorUiMagicCursor = 567,
+    CEF_ColorActivityIndicatorForeground = 568,
+    CEF_ColorActivityIndicatorSubtitleForeground = 569,
+    CEF_ColorAvatarButtonHighlightDefault = 570,
+    CEF_ColorAvatarButtonHighlightGuest = 571,
+    CEF_ColorAvatarButtonHighlightSyncError = 572,
+    CEF_ColorAvatarButtonHighlightSyncPaused = 573,
+    CEF_ColorAvatarButtonHighlightPasskeysLocked = 574,
+    CEF_ColorAvatarButtonHighlightSigninPaused = 575,
+    CEF_ColorAvatarButtonHighlightExplicitText = 576,
+    CEF_ColorAvatarButtonHighlightIncognito = 577,
+    CEF_ColorAvatarButtonHighlightManagement = 578,
+    CEF_ColorAvatarButtonHighlightGuestForeground = 579,
+    CEF_ColorAvatarButtonHighlightDefaultForeground = 580,
+    CEF_ColorAvatarButtonHighlightSyncErrorForeground = 581,
+    CEF_ColorAvatarButtonHighlightIncognitoForeground = 582,
+    CEF_ColorAvatarButtonHighlightManagementForeground = 583,
+    CEF_ColorAvatarButtonIncognitoHover = 584,
+    CEF_ColorAvatarButtonNormalRipple = 585,
+    CEF_ColorAvatarStroke = 586,
+    CEF_ColorAvatarFillForContrast = 587,
+    CEF_ColorBookmarkBarBackground = 588,
+    CEF_ColorBookmarkBarForeground = 589,
+    CEF_ColorBookmarkBarForegroundDisabled = 590,
+    CEF_ColorBookmarkBarSeparator = 591,
+    CEF_ColorBookmarkBarSeparatorChromeRefresh = 592,
+    CEF_ColorBookmarkButtonIcon = 593,
+    CEF_ColorBookmarkDialogTrackPriceIcon = 594,
+    CEF_ColorBookmarkDialogProductImageBorder = 595,
+    CEF_ColorBookmarkDragImageBackground = 596,
+    CEF_ColorBookmarkDragImageCountBackground = 597,
+    CEF_ColorBookmarkDragImageCountForeground = 598,
+    CEF_ColorBookmarkDragImageForeground = 599,
+    CEF_ColorBookmarkDragImageIconBackground = 600,
+    CEF_ColorBookmarkFavicon = 601,
+    CEF_ColorBookmarkFolderIcon = 602,
+    CEF_ColorCaptionButtonBackground = 603,
+    CEF_ColorCapturedTabContentsBorder = 604,
+    CEF_ColorCastDialogHelpIcon = 605,
+    CEF_ColorChromeSigninBubbleBackground = 606,
+    CEF_ColorChromeSigninBubbleInfoBackground = 607,
+    CEF_ColorBatchUploadBackground = 608,
+    CEF_ColorBatchUploadDataBackground = 609,
+    CEF_ColorBatchUploadDataSeparator = 610,
+    CEF_ColorBnplIssuerLabelForeground = 611,
+    CEF_ColorBnplIssuerLabelForegroundDisabled = 612,
+    CEF_ColorBnplIssuerLinkedIneligibleBackground = 613,
+    CEF_ColorBnplIssuerLinkedPillBackground = 614,
+    CEF_ColorBnplIssuerLinkedPillForeground = 615,
+    CEF_ColorComposeDialogBackground = 616,
+    CEF_ColorComposeDialogDivider = 617,
+    CEF_ColorComposeDialogError = 618,
+    CEF_ColorComposeDialogForegroundSubtle = 619,
+    CEF_ColorComposeDialogLink = 620,
+    CEF_ColorComposeDialogLogo = 621,
+    CEF_ColorComposeDialogResultBackground = 622,
+    CEF_ColorComposeDialogResultForeground = 623,
+    CEF_ColorComposeDialogResultForegroundWhileLoading = 624,
+    CEF_ColorComposeDialogResultIcon = 625,
+    CEF_ColorComposeDialogResultContainerScrollbarThumb = 626,
+    CEF_ColorComposeDialogScrollbarThumb = 627,
+    CEF_ColorComposeDialogTitle = 628,
+    CEF_ColorComposeDialogTextarea = 629,
+    CEF_ColorComposeDialogTextareaOutline = 630,
+    CEF_ColorComposeDialogTextareaPlaceholder = 631,
+    CEF_ColorComposeDialogTextareaReadonlyBackground = 632,
+    CEF_ColorComposeDialogTextareaReadonlyForeground = 633,
+    CEF_ColorComposeDialogTextareaIcon = 634,
+    CEF_ColorComposeDialogSelectOptionDisabled = 635,
+    CEF_ColorDesktopMediaPickerDescriptionLabel = 636,
+    CEF_ColorDesktopMediaTabListBorder = 637,
+    CEF_ColorDesktopMediaTabListPreviewBackground = 638,
+    CEF_ColorDesktopToIOSPromoFooterSubtitleLabel = 639,
+    CEF_ColorDownloadItemIconDangerous = 640,
+    CEF_ColorDownloadItemTextDangerous = 641,
+    CEF_ColorDownloadItemIconWarning = 642,
+    CEF_ColorDownloadItemTextWarning = 643,
+    CEF_ColorDownloadBubbleInfoBackground = 644,
+    CEF_ColorDownloadBubbleInfoIcon = 645,
+    CEF_ColorDownloadBubbleRowHover = 646,
+    CEF_ColorDownloadBubbleShowAllDownloadsIcon = 647,
+    CEF_ColorDownloadBubblePrimaryIcon = 648,
+    CEF_ColorDownloadToolbarButtonActive = 649,
+    CEF_ColorDownloadToolbarButtonAnimationBackground = 650,
+    CEF_ColorDownloadToolbarButtonAnimationForeground = 651,
+    CEF_ColorDownloadToolbarButtonInactive = 652,
+    CEF_ColorDownloadToolbarButtonRingBackground = 653,
+    CEF_ColorExtensionDialogBackground = 654,
+    CEF_ColorExtensionIconBadgeBackgroundDefault = 655,
+    CEF_ColorExtensionIconDecorationAmbientShadow = 656,
+    CEF_ColorExtensionIconDecorationBackground = 657,
+    CEF_ColorExtensionIconDecorationKeyShadow = 658,
+    CEF_ColorExtensionMenuIcon = 659,
+    CEF_ColorExtensionMenuIconDisabled = 660,
+    CEF_ColorExtensionMenuPinButtonIcon = 661,
+    CEF_ColorExtensionMenuPinButtonIconDisabled = 662,
+    CEF_ColorExtensionsMenuContainerBackground = 663,
+    CEF_ColorExtensionsMenuText = 664,
+    CEF_ColorExtensionsMenuSecondaryText = 665,
+    CEF_ColorFeatureFirstRunInfoContainerBackground = 666,
+    CEF_ColorFeatureFirstRunIconColor = 667,
+    CEF_ColorFeaturePromoBubbleBackground = 668,
+    CEF_ColorFeaturePromoBubbleButtonBorder = 669,
+    CEF_ColorFeaturePromoBubbleCloseButtonInkDrop = 670,
+    CEF_ColorFeaturePromoBubbleDefaultButtonBackground = 671,
+    CEF_ColorFeaturePromoBubbleDefaultButtonForeground = 672,
+    CEF_ColorFeaturePromoBubbleForeground = 673,
+    CEF_ColorFeatureLensPromoBubbleBackground = 674,
+    CEF_ColorFeatureLensPromoBubbleForeground = 675,
+    CEF_ColorFindBarBackground = 676,
+    CEF_ColorFindBarButtonIcon = 677,
+    CEF_ColorFindBarButtonIconHovered = 678,
+    CEF_ColorFindBarButtonIconDisabled = 679,
+    CEF_ColorFindBarForeground = 680,
+    CEF_ColorFindBarMatchCount = 681,
+    CEF_ColorFlyingIndicatorBackground = 682,
+    CEF_ColorFlyingIndicatorForeground = 683,
+    CEF_ColorFocusHighlightDefault = 684,
+    CEF_ColorFrameCaptionActive = 685,
+    CEF_ColorFrameCaptionInactive = 686,
+    CEF_ColorHistoryEmbeddingsBackground = 687,
+    CEF_ColorHistoryEmbeddingsDivider = 688,
+    CEF_ColorHistoryEmbeddingsForeground = 689,
+    CEF_ColorHistoryEmbeddingsForegroundSubtle = 690,
+    CEF_ColorHistoryEmbeddingsImageBackground = 691,
+    CEF_ColorHistoryEmbeddingsImageBackgroundGradientEnd = 692,
+    CEF_ColorHistoryEmbeddingsImageBackgroundGradientStart = 693,
+    CEF_ColorInfoBarBackground = 694,
+    CEF_ColorInfoBarButtonIcon = 695,
+    CEF_ColorInfoBarButtonIconDisabled = 696,
+    CEF_ColorInfoBarButtonIconHovered = 697,
+    CEF_ColorInfoBarContentAreaSeparator = 698,
+    CEF_ColorInfoBarForeground = 699,
+    CEF_ColorIntentPickerItemBackgroundHovered = 700,
+    CEF_ColorIntentPickerItemBackgroundSelected = 701,
+    CEF_ColorGlicBackground = 702,
+    CEF_ColorGlicModalBackground = 703,
+    CEF_ColorGlicModalForeground = 704,
+    CEF_ColorGlicActiveTabUnderlineGradient1 = 705,
+    CEF_ColorGlicActiveTabUnderlineGradient2 = 706,
+    CEF_ColorGlicActiveTabUnderlineGradient3 = 707,
+    CEF_ColorGlicInactiveTabUnderlineGradient1 = 708,
+    CEF_ColorGlicInactiveTabUnderlineGradient2 = 709,
+    CEF_ColorGlicInactiveTabUnderlineGradient3 = 710,
+    CEF_ColorHoverButtonBackgroundHovered = 711,
+    CEF_ColorLensOverlayToastBackground = 712,
+    CEF_ColorLensOverlayToastButtonBorder = 713,
+    CEF_ColorLensOverlayToastForeground = 714,
+    CEF_ColorLocationBarBackground = 715,
+    CEF_ColorLocationBarBackgroundHovered = 716,
+    CEF_ColorLocationBarBorder = 717,
+    CEF_ColorLocationBarBorderOnMismatch = 718,
+    CEF_ColorLocationBarBorderOpaque = 719,
+    CEF_ColorLocationBarClearAllButtonIcon = 720,
+    CEF_ColorLocationBarClearAllButtonIconDisabled = 721,
+    CEF_ColorMediaRouterIconActive = 722,
+    CEF_ColorMediaRouterIconWarning = 723,
+    CEF_ColorMultiContentsViewActiveContentOutline = 724,
+    CEF_ColorMultiContentsViewInactiveContentOutline = 725,
+    CEF_ColorMultiContentsViewHighlightContentOutline = 726,
+    CEF_ColorMultiContentsViewMiniToolbarForeground = 727,
+    CEF_ColorNewTabButtonForegroundFrameActive = 728,
+    CEF_ColorNewTabButtonForegroundFrameInactive = 729,
+    CEF_ColorNewTabButtonBackgroundFrameActive = 730,
+    CEF_ColorNewTabButtonBackgroundFrameInactive = 731,
+    CEF_ColorNewTabButtonFocusRing = 732,
+    CEF_ColorNewTabButtonInkDropFrameActive = 733,
+    CEF_ColorNewTabButtonInkDropFrameInactive = 734,
+    CEF_ColorTabStripComboButtonSeparator = 735,
+    CEF_ColorTabStripControlButtonInkDrop = 736,
+    CEF_ColorTabStripControlButtonInkDropRipple = 737,
+    CEF_ColorNewTabButtonCRForegroundFrameActive = 738,
+    CEF_ColorNewTabButtonCRForegroundFrameInactive = 739,
+    CEF_ColorNewTabButtonCRBackgroundFrameActive = 740,
+    CEF_ColorNewTabButtonCRBackgroundFrameInactive = 741,
+    CEF_ColorNewTabPageActionButtonBackground = 742,
+    CEF_ColorNewTabPageActionButtonBorder = 743,
+    CEF_ColorNewTabPageActionButtonBorderHovered = 744,
+    CEF_ColorNewTabPageActionButtonForeground = 745,
+    CEF_ColorNewTabPageActiveBackground = 746,
+    CEF_ColorNewTabPageAddShortcutBackground = 747,
+    CEF_ColorNewTabPageAddShortcutForeground = 748,
+    CEF_ColorNewTabPageAttributionForeground = 749,
+    CEF_ColorNewTabPageBackground = 750,
+    CEF_ColorNewTabPageBackgroundOverride = 751,
+    CEF_ColorNewTabPageBorder = 752,
+    CEF_ColorNewTabPageButtonBackground = 753,
+    CEF_ColorNewTabPageButtonBackgroundHovered = 754,
+    CEF_ColorNewTabPageButtonForeground = 755,
+    CEF_ColorNewTabPageCartModuleDiscountChipBackground = 756,
+    CEF_ColorNewTabPageCartModuleDiscountChipForeground = 757,
+    CEF_ColorNewTabPageActionChipTextBody = 758,
+    CEF_ColorNewTabPageActionChipTextTitle = 759,
+    CEF_ColorNewTabPageActionChipDeepSearchIcon = 760,
+    CEF_ColorNewTabPageThreadsRailBackground = 761,
+    CEF_ColorNewTabPageThreadsRailIconButton = 762,
+    CEF_ColorNewTabPageChipBackground = 763,
+    CEF_ColorNewTabPageChipForeground = 764,
+    CEF_ColorComposeboxBackground = 765,
+    CEF_ColorComposeboxFileChipSpinner = 766,
+    CEF_ColorComposeboxFont = 767,
+    CEF_ColorComposeboxFontLight = 768,
+    CEF_ColorComposeboxCancelButton = 769,
+    CEF_ColorComposeboxCancelButtonLight = 770,
+    CEF_ColorComposeboxErrorScrimBackground = 771,
+    CEF_ColorComposeboxErrorScrimButtonBackground = 772,
+    CEF_ColorComposeboxErrorScrimButtonBackgroundHover = 773,
+    CEF_ColorComposeboxErrorScrimButtonText = 774,
+    CEF_ColorComposeboxErrorScrimForeground = 775,
+    CEF_ColorComposeboxHover = 776,
+    CEF_ColorComposeboxInputIcon = 777,
+    CEF_ColorComposeboxLensButton = 778,
+    CEF_ColorComposeboxOutlineHcm = 779,
+    CEF_ColorComposeboxRecentTabChipOutline = 780,
+    CEF_ColorComposeboxScrimBackground = 781,
+    CEF_ColorComposeboxSubmitButtonBackground = 782,
+    CEF_ColorComposeboxSuggestionActivity = 783,
+    CEF_ColorComposeboxTabSelectorButtonSelected = 784,
+    CEF_ColorComposeboxTypeAhead = 785,
+    CEF_ColorComposeboxTypeAheadChip = 786,
+    CEF_ColorComposeboxUploadButton = 787,
+    CEF_ColorComposeboxUploadButtonDisabled = 788,
+    CEF_ColorComposeboxFileChipBackground = 789,
+    CEF_ColorComposeboxFileChipFaviconBackground = 790,
+    CEF_ColorComposeboxFileChipText = 791,
+    CEF_ColorComposeboxPdfChipIcon = 792,
+    CEF_ColorComposeboxFileImageOverlay = 793,
+    CEF_ColorComposeboxFileCarouselDivider = 794,
+    CEF_ColorComposeboxFileCarouselRemoveButton = 795,
+    CEF_ColorComposeboxFileCarouselRemoveGradientStart = 796,
+    CEF_ColorComposeboxFileCarouselRemoveGradientEnd = 797,
+    CEF_ColorComposeboxFileCarouselUrl = 798,
+    CEF_ColorComposeboxContextEntrypointTextDisabled = 799,
+    CEF_ColorComposeboxContextEntrypointHoverBackground = 800,
+    CEF_ColorComposeboxLink = 801,
+    CEF_ColorNewTabPageCommonInputPlaceholder = 802,
+    CEF_ColorNewTabPageControlBackgroundHovered = 803,
+    CEF_ColorNewTabPageControlBackgroundSelected = 804,
+    CEF_ColorNewTabPageFirstRunBackground = 805,
+    CEF_ColorNewTabPageFocusRing = 806,
+    CEF_ColorNewTabPageHeader = 807,
+    CEF_ColorNewTabPageHistoryClustersModuleItemBackground = 808,
+    CEF_ColorNewTabPagePromoBackground = 809,
+    CEF_ColorNewTabPagePromoImageBackground = 810,
+    CEF_ColorNewTabPageIconButtonBackground = 811,
+    CEF_ColorNewTabPageIconButtonBackgroundActive = 812,
+    CEF_ColorNewTabPageLink = 813,
+    CEF_ColorNewTabPageLogo = 814,
+    CEF_ColorNewTabPageLogoUnthemedDark = 815,
+    CEF_ColorNewTabPageLogoUnthemedLight = 816,
+    CEF_ColorNewTabPageMenuInnerShadow = 817,
+    CEF_ColorNewTabPageMenuOuterShadow = 818,
+    CEF_ColorNewTabPageMicBorderColor = 819,
+    CEF_ColorNewTabPageMicIconColor = 820,
+    CEF_ColorNewTabPageModuleControlBorder = 821,
+    CEF_ColorNewTabPageModuleContextMenuDivider = 822,
+    CEF_ColorNewTabPageModuleBackground = 823,
+    CEF_ColorNewTabPageModuleCalendarEventTimeStatusBackground = 824,
+    CEF_ColorNewTabPageModuleCalendarAttachmentScrollbarThumb = 825,
+    CEF_ColorNewTabPageModuleCalendarDividerColor = 826,
+    CEF_ColorNewTabPageModuleIconBackground = 827,
+    CEF_ColorNewTabPageModuleElementDivider = 828,
+    CEF_ColorNewTabPageModuleIconContainerBackground = 829,
+    CEF_ColorNewTabPageModuleItemBackground = 830,
+    CEF_ColorNewTabPageModuleItemBackgroundHovered = 831,
+    CEF_ColorNewTabPageModuleScrollButtonBackground = 832,
+    CEF_ColorNewTabPageModuleScrollButtonBackgroundHovered = 833,
+    CEF_ColorNewTabPageModuleTabGroupsGrey = 834,
+    CEF_ColorNewTabPageModuleTabGroupsBlue = 835,
+    CEF_ColorNewTabPageModuleTabGroupsRed = 836,
+    CEF_ColorNewTabPageModuleTabGroupsYellow = 837,
+    CEF_ColorNewTabPageModuleTabGroupsGreen = 838,
+    CEF_ColorNewTabPageModuleTabGroupsPink = 839,
+    CEF_ColorNewTabPageModuleTabGroupsPurple = 840,
+    CEF_ColorNewTabPageModuleTabGroupsCyan = 841,
+    CEF_ColorNewTabPageModuleTabGroupsOrange = 842,
+    CEF_ColorNewTabPageModuleTabGroupsDotGrey = 843,
+    CEF_ColorNewTabPageModuleTabGroupsDotBlue = 844,
+    CEF_ColorNewTabPageModuleTabGroupsDotRed = 845,
+    CEF_ColorNewTabPageModuleTabGroupsDotYellow = 846,
+    CEF_ColorNewTabPageModuleTabGroupsDotGreen = 847,
+    CEF_ColorNewTabPageModuleTabGroupsDotPink = 848,
+    CEF_ColorNewTabPageModuleTabGroupsDotPurple = 849,
+    CEF_ColorNewTabPageModuleTabGroupsDotCyan = 850,
+    CEF_ColorNewTabPageModuleTabGroupsDotOrange = 851,
+    CEF_ColorNewTabPageMostVisitedForeground = 852,
+    CEF_ColorNewTabPageMostVisitedTileBackground = 853,
+    CEF_ColorNewTabPageMostVisitedTileBackgroundThemed = 854,
+    CEF_ColorNewTabPageMostVisitedTileBackgroundUnthemed = 855,
+    CEF_ColorNewTabPageOnThemeForeground = 856,
+    CEF_ColorNewTabPageOverlayBackground = 857,
+    CEF_ColorNewTabPageOverlayForeground = 858,
+    CEF_ColorNewTabPageOverlaySecondaryForeground = 859,
+    CEF_ColorNewTabPagePrimaryForeground = 860,
+    CEF_ColorNewTabPageRealboxNextIconHover = 861,
+    CEF_ColorNewTabPageSearchBoxBackground = 862,
+    CEF_ColorNewTabPageSearchBoxBackgroundHovered = 863,
+    CEF_ColorNewTabPageSearchBoxResultsTextDimmedSelected = 864,
+    CEF_ColorNewTabPageSecondaryForeground = 865,
+    CEF_ColorNewTabPageSectionBorder = 866,
+    CEF_ColorNewTabPageTagBackground = 867,
+    CEF_ColorNewTabPageText = 868,
+    CEF_ColorNewTabPageTextUnthemed = 869,
+    CEF_ColorNewTabPageTextLight = 870,
+    CEF_ColorNewTabPageWallpaperSearchButtonBackground = 871,
+    CEF_ColorNewTabPageWallpaperSearchButtonBackgroundHovered = 872,
+    CEF_ColorNewTabPageWallpaperSearchButtonForeground = 873,
+    CEF_ColorNewTabPageDoodleShareButtonBackground = 874,
+    CEF_ColorNewTabPageDoodleShareButtonIcon = 875,
+    CEF_ColorNewTabFooterBackground = 876,
+    CEF_ColorNewTabFooterText = 877,
+    CEF_ColorNewTabFooterLogoBackground = 878,
+    CEF_ColorOmniboxActionIcon = 879,
+    CEF_ColorOmniboxActionIconHover = 880,
+    CEF_ColorOmniboxAnswerIconGM3Background = 881,
+    CEF_ColorOmniboxAnswerIconGM3Foreground = 882,
+    CEF_ColorOmniboxBubbleOutline = 883,
+    CEF_ColorOmniboxChipInUseActivityIndicatorBackground = 884,
+    CEF_ColorOmniboxChipInUseActivityIndicatorForeground = 885,
+    CEF_ColorOmniboxChipBackground = 886,
+    CEF_ColorOmniboxChipBlockedActivityIndicatorBackground = 887,
+    CEF_ColorOmniboxChipBlockedActivityIndicatorForeground = 888,
+    CEF_ColorOmniboxChipForegroundLowVisibility = 889,
+    CEF_ColorOmniboxChipForegroundNormalVisibility = 890,
+    CEF_ColorOmniboxChipInkDropHover = 891,
+    CEF_ColorOmniboxChipInkDropRipple = 892,
+    CEF_ColorOmniboxChipOnSystemBlockedActivityIndicatorBackground = 893,
+    CEF_ColorOmniboxChipOnSystemBlockedActivityIndicatorForeground = 894,
+    CEF_ColorOmniboxComposeboxChipBackground = 895,
+    CEF_ColorOmniboxComposeboxDivider = 896,
+    CEF_ColorOmniboxComposeboxFaviconBackground = 897,
+    CEF_ColorOmniboxComposeboxFileThumbnailOverlay = 898,
+    CEF_ColorOmniboxComposeboxFileThumbnailOverlayIcon = 899,
+    CEF_ColorOmniboxComposeboxPrimaryAction = 900,
+    CEF_ColorOmniboxComposeboxSubmitButtonBackground = 901,
+    CEF_ColorOmniboxComposeboxSubmitButtonIcon = 902,
+    CEF_ColorOmniboxContextEntrypointHoverBackground = 903,
+    CEF_ColorOmniboxContextEntrypointText = 904,
+    CEF_ColorOmniboxForegroundDisabled = 905,
+    CEF_ColorOmniboxIconBackground = 906,
+    CEF_ColorOmniboxIconBackgroundTonal = 907,
+    CEF_ColorOmniboxIconForeground = 908,
+    CEF_ColorOmniboxIconForegroundTonal = 909,
+    CEF_ColorOmniboxIconHover = 910,
+    CEF_ColorOmniboxIconPressed = 911,
+    CEF_ColorOmniboxIntentChipBackground = 912,
+    CEF_ColorOmniboxIntentChipIcon = 913,
+    CEF_ColorOmniboxKeywordSelected = 914,
+    CEF_ColorOmniboxKeywordSeparator = 915,
+    CEF_ColorOmniboxResultsBackground = 916,
+    CEF_ColorOmniboxResultsBackgroundHovered = 917,
+    CEF_ColorOmniboxResultsBackgroundSelected = 918,
+    CEF_ColorOmniboxResultsBackgroundIph = 919,
+    CEF_ColorOmniboxResultsButtonBorder = 920,
+    CEF_ColorOmniboxResultsButtonIcon = 921,
+    CEF_ColorOmniboxResultsButtonIconSelected = 922,
+    CEF_ColorOmniboxResultsButtonInkDrop = 923,
+    CEF_ColorOmniboxResultsButtonInkDropRowHovered = 924,
+    CEF_ColorOmniboxResultsButtonInkDropRowSelected = 925,
+    CEF_ColorOmniboxResultsButtonInkDropSelected = 926,
+    CEF_ColorOmniboxResultsButtonInkDropSelectedRowHovered = 927,
+    CEF_ColorOmniboxResultsButtonInkDropSelectedRowSelected = 928,
+    CEF_ColorOmniboxResultsChipBackground = 929,
+    CEF_ColorOmniboxResultsFocusIndicator = 930,
+    CEF_ColorOmniboxResultsIcon = 931,
+    CEF_ColorOmniboxResultsIconGM3Background = 932,
+    CEF_ColorOmniboxResultsIconSelected = 933,
+    CEF_ColorOmniboxResultsIconHovered = 934,
+    CEF_ColorOmniboxResultsStarterPackIcon = 935,
+    CEF_ColorOmniboxResultsTextAnswer = 936,
+    CEF_ColorOmniboxResultsTextDimmed = 937,
+    CEF_ColorOmniboxResultsTextDimmedSelected = 938,
+    CEF_ColorOmniboxResultsTextNegative = 939,
+    CEF_ColorOmniboxResultsTextNegativeSelected = 940,
+    CEF_ColorOmniboxResultsTextPositive = 941,
+    CEF_ColorOmniboxResultsTextPositiveSelected = 942,
+    CEF_ColorOmniboxResultsTextSecondary = 943,
+    CEF_ColorOmniboxResultsTextSecondarySelected = 944,
+    CEF_ColorOmniboxResultsTextSelected = 945,
+    CEF_ColorOmniboxResultsUrl = 946,
+    CEF_ColorOmniboxResultsUrlSelected = 947,
+    CEF_ColorOmniboxSecurityChipDangerous = 948,
+    CEF_ColorOmniboxSecurityChipDangerousBackground = 949,
+    CEF_ColorOmniboxSecurityChipDefault = 950,
+    CEF_ColorOmniboxSecurityChipInkDropHover = 951,
+    CEF_ColorOmniboxSecurityChipInkDropRipple = 952,
+    CEF_ColorOmniboxSecurityChipSecure = 953,
+    CEF_ColorOmniboxSecurityChipText = 954,
+    CEF_ColorOmniboxSelectionBackground = 955,
+    CEF_ColorOmniboxSelectionForeground = 956,
+    CEF_ColorOmniboxText = 957,
+    CEF_ColorOmniboxTextDimmed = 958,
+    CEF_ColorPageInfoChosenObjectDeleteButtonIcon = 959,
+    CEF_ColorPageInfoChosenObjectDeleteButtonIconDisabled = 960,
+    CEF_ColorPageInfoForeground = 961,
+    CEF_ColorPageInfoSubtitleForeground = 962,
+    CEF_ColorPageInfoPermissionBlockedOnSystemLevelDisabled = 963,
+    CEF_ColorPageInfoPermissionUsedIcon = 964,
+    CEF_ColorParentAccessViewLocalWebApprovalBackground = 965,
+    CEF_ColorPaymentsFeedbackTipBackground = 966,
+    CEF_ColorPaymentsFeedbackTipBorder = 967,
+    CEF_ColorPaymentsFeedbackTipForeground = 968,
+    CEF_ColorPaymentsFeedbackTipIcon = 969,
+    CEF_ColorPaymentsGooglePayLogo = 970,
+    CEF_ColorPaymentsPromoCodeBackground = 971,
+    CEF_ColorPaymentsPromoCodeForeground = 972,
+    CEF_ColorPaymentsPromoCodeForegroundHovered = 973,
+    CEF_ColorPaymentsPromoCodeForegroundPressed = 974,
+    CEF_ColorPaymentsPromoCodeInkDrop = 975,
+    CEF_ColorPaymentsRequestBackArrowButtonIcon = 976,
+    CEF_ColorPaymentsRequestBackArrowButtonIconDisabled = 977,
+    CEF_ColorPaymentsRequestRowBackgroundHighlighted = 978,
+    CEF_ColorPermissionPromptRequestText = 979,
+    CEF_ColorPerformanceInterventionButtonIconActive = 980,
+    CEF_ColorPerformanceInterventionButtonIconInactive = 981,
+    CEF_ColorPipWindowBackToTabButtonBackground = 982,
+    CEF_ColorPipWindowBackground = 983,
+    CEF_ColorPipWindowTopBarBackground = 984,
+    CEF_ColorPipWindowForeground = 985,
+    CEF_ColorPipWindowForegroundInactive = 986,
+    CEF_ColorPipWindowScrimFull = 987,
+    CEF_ColorPipWindowScrimTopGradientStart = 988,
+    CEF_ColorPipWindowScrimTopGradientEnd = 989,
+    CEF_ColorPipWindowScrimBottomGradientStart = 990,
+    CEF_ColorPipWindowScrimBottomGradientEnd = 991,
+    CEF_ColorPipWindowSkipAdButtonBackground = 992,
+    CEF_ColorPipWindowSkipAdButtonBorder = 993,
+    CEF_ColorProductSpecificationsButtonBackground = 994,
+    CEF_ColorProductSpecificationsCitationBackground = 995,
+    CEF_ColorProductSpecificationsCitationPopupBackground = 996,
+    CEF_ColorProductSpecificationsCitationPopupText = 997,
+    CEF_ColorProductSpecificationsCitationPopupTitle = 998,
+    CEF_ColorProductSpecificationsComparisonTableListBackground = 999,
+    CEF_ColorProductSpecificationsDetailChipBackground = 1000,
+    CEF_ColorProductSpecificationsDisclosureBackground = 1001,
+    CEF_ColorProductSpecificationsDisclosureForeground = 1002,
+    CEF_ColorProductSpecificationsDisclosureGradientEnd = 1003,
+    CEF_ColorProductSpecificationsDisclosureGradientStart = 1004,
+    CEF_ColorProductSpecificationsDisclosureSummaryBackground = 1005,
+    CEF_ColorProductSpecificationsDivider = 1006,
+    CEF_ColorProductSpecificationsGradientIcon = 1007,
+    CEF_ColorProductSpecificationsHorizontalCarouselScrollbarThumb = 1008,
+    CEF_ColorProductSpecificationsIcon = 1009,
+    CEF_ColorProductSpecificationsIconButtonBackground = 1010,
+    CEF_ColorProductSpecificationsIconButtonHoveredBackground = 1011,
+    CEF_ColorProductSpecificationsLink = 1012,
+    CEF_ColorProductSpecificationsPageBackground = 1013,
+    CEF_ColorProductSpecificationsSummaryBackground = 1014,
+    CEF_ColorProductSpecificationsSummaryBackgroundDragging = 1015,
+    CEF_ColorProductSpecificationsTonalButtonBackground = 1016,
+    CEF_ColorProductSpecificationsTonalButtonIcon = 1017,
+    CEF_ColorProfileMenuBackground = 1018,
+    CEF_ColorProfileMenuIdentityInfoBackground = 1019,
+    CEF_ColorProfileMenuIdentityInfoTitle = 1020,
+    CEF_ColorProfileMenuIdentityInfoSubtitle = 1021,
+    CEF_ColorProfileMenuPromoButtonsBackground = 1022,
+    CEF_ColorProfilesReauthDialogBorder = 1023,
+    CEF_ColorProjectsPanelBackground = 1024,
+    CEF_ColorProjectsPanelButtonDisabledIcon = 1025,
+    CEF_ColorProjectsPanelButtonHoverBackground = 1026,
+    CEF_ColorProjectsPanelButtonIcon = 1027,
+    CEF_ColorProjectsPanelListsSeparator = 1028,
+    CEF_ColorProjectsPanelNoTabGroupsText = 1029,
+    CEF_ColorProjectsPanelTabGroupsDragPlaceholder = 1030,
+    CEF_ColorProjectsPanelTabGroupsDropIndicator = 1031,
+    CEF_ColorPwaBackground = 1032,
+    CEF_ColorPwaMenuButtonIcon = 1033,
+    CEF_ColorPwaSecurityChipForeground = 1034,
+    CEF_ColorPwaSecurityChipForegroundDangerous = 1035,
+    CEF_ColorPwaSecurityChipForegroundSecure = 1036,
+    CEF_ColorPwaTabBarBottomSeparator = 1037,
+    CEF_ColorPwaTabBarTopSeparator = 1038,
+    CEF_ColorPwaTheme = 1039,
+    CEF_ColorPwaToolbarBackground = 1040,
+    CEF_ColorPwaToolbarButtonIcon = 1041,
+    CEF_ColorPwaToolbarButtonIconDisabled = 1042,
+    CEF_ColorQrCodeBackground = 1043,
+    CEF_ColorQrCodeBorder = 1044,
+    CEF_ColorQuickAnswersReportQueryButtonBackground = 1045,
+    CEF_ColorQuickAnswersReportQueryButtonForeground = 1046,
+    CEF_ColorReadAnythingBackground = 1047,
+    CEF_ColorReadAnythingBackgroundBlue = 1048,
+    CEF_ColorReadAnythingBackgroundDark = 1049,
+    CEF_ColorReadAnythingBackgroundLight = 1050,
+    CEF_ColorReadAnythingBackgroundYellow = 1051,
+    CEF_ColorReadAnythingBackgroundHighContrast = 1052,
+    CEF_ColorReadAnythingBackgroundLowContrastLight = 1053,
+    CEF_ColorReadAnythingBackgroundLowContrastDark = 1054,
+    CEF_ColorReadAnythingCurrentReadAloudHighlight = 1055,
+    CEF_ColorReadAnythingCurrentReadAloudHighlightBlue = 1056,
+    CEF_ColorReadAnythingCurrentReadAloudHighlightDark = 1057,
+    CEF_ColorReadAnythingCurrentReadAloudHighlightLight = 1058,
+    CEF_ColorReadAnythingCurrentReadAloudHighlightYellow = 1059,
+    CEF_ColorReadAnythingCurrentReadAloudHighlightHighContrast = 1060,
+    CEF_ColorReadAnythingCurrentReadAloudHighlightLowContrastLight = 1061,
+    CEF_ColorReadAnythingCurrentReadAloudHighlightLowContrastDark = 1062,
+    CEF_ColorReadAnythingFocusRingBackground = 1063,
+    CEF_ColorReadAnythingFocusRingBackgroundBlue = 1064,
+    CEF_ColorReadAnythingFocusRingBackgroundDark = 1065,
+    CEF_ColorReadAnythingFocusRingBackgroundLight = 1066,
+    CEF_ColorReadAnythingFocusRingBackgroundYellow = 1067,
+    CEF_ColorReadAnythingFocusRingBackgroundHighContrast = 1068,
+    CEF_ColorReadAnythingFocusRingBackgroundLowContrastLight = 1069,
+    CEF_ColorReadAnythingFocusRingBackgroundLowContrastDark = 1070,
+    CEF_ColorReadAnythingForeground = 1071,
+    CEF_ColorReadAnythingForegroundBlue = 1072,
+    CEF_ColorReadAnythingForegroundDark = 1073,
+    CEF_ColorReadAnythingForegroundLight = 1074,
+    CEF_ColorReadAnythingForegroundYellow = 1075,
+    CEF_ColorReadAnythingForegroundHighContrast = 1076,
+    CEF_ColorReadAnythingForegroundLowContrastLight = 1077,
+    CEF_ColorReadAnythingForegroundLowContrastDark = 1078,
+    CEF_ColorReadAnythingLineFocus = 1079,
+    CEF_ColorReadAnythingLineFocusBlue = 1080,
+    CEF_ColorReadAnythingLineFocusDark = 1081,
+    CEF_ColorReadAnythingLineFocusLight = 1082,
+    CEF_ColorReadAnythingLineFocusYellow = 1083,
+    CEF_ColorReadAnythingLineFocusHighContrast = 1084,
+    CEF_ColorReadAnythingLineFocusScrim = 1085,
+    CEF_ColorReadAnythingLineFocusLowContrastLight = 1086,
+    CEF_ColorReadAnythingLineFocusLowContrastDark = 1087,
+    CEF_ColorReadAnythingSeparator = 1088,
+    CEF_ColorReadAnythingSeparatorBlue = 1089,
+    CEF_ColorReadAnythingSeparatorDark = 1090,
+    CEF_ColorReadAnythingSeparatorLight = 1091,
+    CEF_ColorReadAnythingSeparatorYellow = 1092,
+    CEF_ColorReadAnythingSeparatorHighContrast = 1093,
+    CEF_ColorReadAnythingSeparatorLowContrastLight = 1094,
+    CEF_ColorReadAnythingSeparatorLowContrastDark = 1095,
+    CEF_ColorReadAnythingDropdownBackground = 1096,
+    CEF_ColorReadAnythingDropdownBackgroundBlue = 1097,
+    CEF_ColorReadAnythingDropdownBackgroundDark = 1098,
+    CEF_ColorReadAnythingDropdownBackgroundLight = 1099,
+    CEF_ColorReadAnythingDropdownBackgroundYellow = 1100,
+    CEF_ColorReadAnythingDropdownBackgroundHighContrast = 1101,
+    CEF_ColorReadAnythingDropdownBackgroundLowContrastLight = 1102,
+    CEF_ColorReadAnythingDropdownBackgroundLowContrastDark = 1103,
+    CEF_ColorReadAnythingDropdownSelected = 1104,
+    CEF_ColorReadAnythingDropdownSelectedBlue = 1105,
+    CEF_ColorReadAnythingDropdownSelectedDark = 1106,
+    CEF_ColorReadAnythingDropdownSelectedLight = 1107,
+    CEF_ColorReadAnythingDropdownSelectedYellow = 1108,
+    CEF_ColorReadAnythingDropdownSelectedHighContrast = 1109,
+    CEF_ColorReadAnythingDropdownSelectedLowContrastLight = 1110,
+    CEF_ColorReadAnythingDropdownSelectedLowContrastDark = 1111,
+    CEF_ColorReadAnythingTextSelection = 1112,
+    CEF_ColorReadAnythingTextSelectionBlue = 1113,
+    CEF_ColorReadAnythingTextSelectionDark = 1114,
+    CEF_ColorReadAnythingTextSelectionLight = 1115,
+    CEF_ColorReadAnythingTextSelectionYellow = 1116,
+    CEF_ColorReadAnythingTextSelectionHighContrast = 1117,
+    CEF_ColorReadAnythingTextSelectionLowContrastLight = 1118,
+    CEF_ColorReadAnythingTextSelectionLowContrastDark = 1119,
+    CEF_ColorReadAnythingLinkDefault = 1120,
+    CEF_ColorReadAnythingLinkDefaultBlue = 1121,
+    CEF_ColorReadAnythingLinkDefaultDark = 1122,
+    CEF_ColorReadAnythingLinkDefaultLight = 1123,
+    CEF_ColorReadAnythingLinkDefaultYellow = 1124,
+    CEF_ColorReadAnythingLinkDefaultHighContrast = 1125,
+    CEF_ColorReadAnythingLinkDefaultLowContrastLight = 1126,
+    CEF_ColorReadAnythingLinkDefaultLowContrastDark = 1127,
+    CEF_ColorReadAnythingLinkVisited = 1128,
+    CEF_ColorReadAnythingLinkVisitedBlue = 1129,
+    CEF_ColorReadAnythingLinkVisitedDark = 1130,
+    CEF_ColorReadAnythingLinkVisitedLight = 1131,
+    CEF_ColorReadAnythingLinkVisitedYellow = 1132,
+    CEF_ColorReadAnythingLinkVisitedHighContrast = 1133,
+    CEF_ColorReadAnythingLinkVisitedLowContrastLight = 1134,
+    CEF_ColorReadAnythingLinkVisitedLowContrastDark = 1135,
+    CEF_ColorReadAnythingPreviousReadAloudHighlight = 1136,
+    CEF_ColorReadAnythingPreviousReadAloudHighlightBlue = 1137,
+    CEF_ColorReadAnythingPreviousReadAloudHighlightDark = 1138,
+    CEF_ColorReadAnythingPreviousReadAloudHighlightLight = 1139,
+    CEF_ColorReadAnythingPreviousReadAloudHighlightYellow = 1140,
+    CEF_ColorReadAnythingPreviousReadAloudHighlightHighContrast = 1141,
+    CEF_ColorReadAnythingPreviousReadAloudHighlightLowContrastLight = 1142,
+    CEF_ColorReadAnythingPreviousReadAloudHighlightLowContrastDark = 1143,
+    CEF_ColorReadAnythingAudioPlayerBackground = 1144,
+    CEF_ColorReadAnythingAudioPlayerBackgroundBlue = 1145,
+    CEF_ColorReadAnythingAudioPlayerBackgroundDark = 1146,
+    CEF_ColorReadAnythingAudioPlayerBackgroundLight = 1147,
+    CEF_ColorReadAnythingAudioPlayerBackgroundYellow = 1148,
+    CEF_ColorReadAnythingAudioPlayerBackgroundHighContrast = 1149,
+    CEF_ColorReadAnythingAudioPlayerBackgroundLowContrastLight = 1150,
+    CEF_ColorReadAnythingAudioPlayerBackgroundLowContrastDark = 1151,
+    CEF_ColorReadAnythingAudioPlayerIcon = 1152,
+    CEF_ColorReadAnythingAudioPlayerIconBlue = 1153,
+    CEF_ColorReadAnythingAudioPlayerIconDark = 1154,
+    CEF_ColorReadAnythingAudioPlayerIconLight = 1155,
+    CEF_ColorReadAnythingAudioPlayerIconYellow = 1156,
+    CEF_ColorReadAnythingAudioPlayerIconHighContrast = 1157,
+    CEF_ColorReadAnythingAudioPlayerIconLowContrastLight = 1158,
+    CEF_ColorReadAnythingAudioPlayerIconLowContrastDark = 1159,
+    CEF_ColorReadAnythingToolbarIcon = 1160,
+    CEF_ColorReadAnythingToolbarIconBlue = 1161,
+    CEF_ColorReadAnythingToolbarIconDark = 1162,
+    CEF_ColorReadAnythingToolbarIconLight = 1163,
+    CEF_ColorReadAnythingToolbarIconYellow = 1164,
+    CEF_ColorReadAnythingToolbarIconHighContrast = 1165,
+    CEF_ColorReadAnythingToolbarIconLowContrast = 1166,
+    CEF_ColorReadAnythingToolbarIconLowContrastLight = 1167,
+    CEF_ColorReadAnythingToolbarIconLowContrastDark = 1168,
+    CEF_ColorReadAnythingToolbarIconHoverBackground = 1169,
+    CEF_ColorReadAnythingToolbarIconHoverBackgroundBlue = 1170,
+    CEF_ColorReadAnythingToolbarIconHoverBackgroundDark = 1171,
+    CEF_ColorReadAnythingToolbarIconHoverBackgroundLight = 1172,
+    CEF_ColorReadAnythingToolbarIconHoverBackgroundYellow = 1173,
+    CEF_ColorReadAnythingToolbarIconHoverBackgroundHighContrast = 1174,
+    CEF_ColorReadAnythingToolbarIconHoverBackgroundLowContrastLight = 1175,
+    CEF_ColorReadAnythingToolbarIconHoverBackgroundLowContrastDark = 1176,
+    CEF_ColorReadAnythingToolbarFocusOutline = 1177,
+    CEF_ColorReadAnythingToolbarFocusOutlineBlue = 1178,
+    CEF_ColorReadAnythingToolbarFocusOutlineDark = 1179,
+    CEF_ColorReadAnythingToolbarFocusOutlineLight = 1180,
+    CEF_ColorReadAnythingToolbarFocusOutlineYellow = 1181,
+    CEF_ColorReadAnythingToolbarFocusOutlineHighContrast = 1182,
+    CEF_ColorReadAnythingToolbarFocusOutlineLowContrastLight = 1183,
+    CEF_ColorReadAnythingToolbarFocusOutlineLowContrastDark = 1184,
+    CEF_ColorReadAnythingOnAudioPlayerFocusOutline = 1185,
+    CEF_ColorReadAnythingOnAudioPlayerFocusOutlineBlue = 1186,
+    CEF_ColorReadAnythingOnAudioPlayerFocusOutlineDark = 1187,
+    CEF_ColorReadAnythingOnAudioPlayerFocusOutlineLight = 1188,
+    CEF_ColorReadAnythingOnAudioPlayerFocusOutlineYellow = 1189,
+    CEF_ColorReadAnythingOnAudioPlayerFocusOutlineHighContrast = 1190,
+    CEF_ColorReadAnythingOnAudioPlayerFocusOutlineLowContrastLight = 1191,
+    CEF_ColorReadAnythingOnAudioPlayerFocusOutlineLowContrastDark = 1192,
+    CEF_ColorReadAnythingAudioControlsIcon = 1193,
+    CEF_ColorReadAnythingAudioControlsIconBlue = 1194,
+    CEF_ColorReadAnythingAudioControlsIconDark = 1195,
+    CEF_ColorReadAnythingAudioControlsIconLight = 1196,
+    CEF_ColorReadAnythingAudioControlsIconYellow = 1197,
+    CEF_ColorReadAnythingAudioControlsIconHighContrast = 1198,
+    CEF_ColorReadAnythingAudioControlsIconLowContrastLight = 1199,
+    CEF_ColorReadAnythingAudioControlsIconLowContrastDark = 1200,
+    CEF_ColorSearchboxAnswerIconBackground = 1201,
+    CEF_ColorSearchboxAnswerIconForeground = 1202,
+    CEF_ColorSearchboxBackground = 1203,
+    CEF_ColorSearchboxBackgroundHovered = 1204,
+    CEF_ColorSearchboxBorder = 1205,
+    CEF_ColorSearchboxForeground = 1206,
+    CEF_ColorSearchboxLensVoiceIconBackground = 1207,
+    CEF_ColorSearchboxPlaceholder = 1208,
+    CEF_ColorSearchboxResultsActionChip = 1209,
+    CEF_ColorSearchboxResultsActionChipIcon = 1210,
+    CEF_ColorSearchboxResultsActionChipFocusOutline = 1211,
+    CEF_ColorSearchboxResultsBackground = 1212,
+    CEF_ColorSearchboxResultsBackgroundHovered = 1213,
+    CEF_ColorSearchboxResultsButtonHover = 1214,
+    CEF_ColorSearchboxResultsDimSelected = 1215,
+    CEF_ColorSearchboxResultsFocusIndicator = 1216,
+    CEF_ColorSearchboxResultsForeground = 1217,
+    CEF_ColorSearchboxResultsForegroundDimmed = 1218,
+    CEF_ColorSearchboxResultsIcon = 1219,
+    CEF_ColorSearchboxResultsIconFocusedOutline = 1220,
+    CEF_ColorSearchboxResultsIconSelected = 1221,
+    CEF_ColorSearchboxResultsUrl = 1222,
+    CEF_ColorSearchboxResultsUrlSelected = 1223,
+    CEF_ColorSearchboxSearchIconBackground = 1224,
+    CEF_ColorSearchboxSelectionBackground = 1225,
+    CEF_ColorSearchboxSelectionForeground = 1226,
+    CEF_ColorSearchboxShadow = 1227,
+    CEF_ColorNewTabPageActionChipBackground = 1228,
+    CEF_ColorNewTabPageActionChipBackgroundHover = 1229,
+    CEF_ColorSavedTabGroupForegroundGrey = 1230,
+    CEF_ColorSavedTabGroupForegroundBlue = 1231,
+    CEF_ColorSavedTabGroupForegroundRed = 1232,
+    CEF_ColorSavedTabGroupForegroundYellow = 1233,
+    CEF_ColorSavedTabGroupForegroundGreen = 1234,
+    CEF_ColorSavedTabGroupForegroundPink = 1235,
+    CEF_ColorSavedTabGroupForegroundPurple = 1236,
+    CEF_ColorSavedTabGroupForegroundCyan = 1237,
+    CEF_ColorSavedTabGroupForegroundOrange = 1238,
+    CEF_ColorSavedTabGroupOutlineGrey = 1239,
+    CEF_ColorSavedTabGroupOutlineBlue = 1240,
+    CEF_ColorSavedTabGroupOutlineRed = 1241,
+    CEF_ColorSavedTabGroupOutlineYellow = 1242,
+    CEF_ColorSavedTabGroupOutlineGreen = 1243,
+    CEF_ColorSavedTabGroupOutlinePink = 1244,
+    CEF_ColorSavedTabGroupOutlinePurple = 1245,
+    CEF_ColorSavedTabGroupOutlineCyan = 1246,
+    CEF_ColorSavedTabGroupOutlineOrange = 1247,
+    CEF_ColorScreenshotCapturedImageBackground = 1248,
+    CEF_ColorScreenshotCapturedImageBorder = 1249,
+    CEF_ColorShareThisTabAudioToggleBackground = 1250,
+    CEF_ColorShareThisTabSourceViewBorder = 1251,
+    CEF_ColorSharingRecentActivityDialogFaviconContainer = 1252,
+    CEF_ColorSharingRecentActivityDialogActivityContainer = 1253,
+    CEF_ColorSidePanelBackground = 1254,
+    CEF_ColorSidePanelBadgeBackground = 1255,
+    CEF_ColorSidePanelBadgeBackgroundUpdated = 1256,
+    CEF_ColorSidePanelBadgeForeground = 1257,
+    CEF_ColorSidePanelBadgeForegroundUpdated = 1258,
+    CEF_ColorSidePanelBookmarksSelectedFolderBackground = 1259,
+    CEF_ColorSidePanelBookmarksSelectedFolderForeground = 1260,
+    CEF_ColorSidePanelBookmarksSelectedFolderIcon = 1261,
+    CEF_ColorSidePanelBookmarksActiveFolderForeground = 1262,
+    CEF_ColorSidePanelBookmarksActiveFolderBackground = 1263,
+    CEF_ColorSidePanelCardBackground = 1264,
+    CEF_ColorSidePanelCardPrimaryForeground = 1265,
+    CEF_ColorSidePanelCardSecondaryForeground = 1266,
+    CEF_ColorSidePanelCommerceGraphAxis = 1267,
+    CEF_ColorSidePanelCommerceGraphBubbleBackground = 1268,
+    CEF_ColorSidePanelCommerceGraphLine = 1269,
+    CEF_ColorSidePanelContentAreaSeparator = 1270,
+    CEF_ColorSidePanelContentBackground = 1271,
+    CEF_ColorSidePanelCustomizeChromeClassicChromeTileBorder = 1272,
+    CEF_ColorSidePanelCustomizeChromeCornerNtpBorder = 1273,
+    CEF_ColorSidePanelCustomizeChromeCustomOptionBackground = 1274,
+    CEF_ColorSidePanelCustomizeChromeCustomOptionForeground = 1275,
+    CEF_ColorSidePanelCustomizeChromeMiniNtpActiveTab = 1276,
+    CEF_ColorSidePanelCustomizeChromeMiniNtpArrowsAndRefreshButton = 1277,
+    CEF_ColorSidePanelCustomizeChromeMiniNtpBackground = 1278,
+    CEF_ColorSidePanelCustomizeChromeMiniNtpBorder = 1279,
+    CEF_ColorSidePanelCustomizeChromeMiniNtpCaron = 1280,
+    CEF_ColorSidePanelCustomizeChromeMiniNtpCaronContainer = 1281,
+    CEF_ColorSidePanelCustomizeChromeMiniNtpChromeLogo = 1282,
+    CEF_ColorSidePanelCustomizeChromeMiniNtpOmnibox = 1283,
+    CEF_ColorSidePanelCustomizeChromeMiniNtpTabStripBackground = 1284,
+    CEF_ColorSidePanelCustomizeChromeThemeBackground = 1285,
+    CEF_ColorSidePanelCustomizeChromeThemeCheckmarkBackground = 1286,
+    CEF_ColorSidePanelCustomizeChromeThemeCheckmarkForeground = 1287,
+    CEF_ColorSidePanelCustomizeChromeThemeSnapshotBackground = 1288,
+    CEF_ColorSidePanelCustomizeChromeWebStoreBorder = 1289,
+    CEF_ColorSidePanelDialogBackground = 1290,
+    CEF_ColorSidePanelDialogDivider = 1291,
+    CEF_ColorSidePanelDialogPrimaryForeground = 1292,
+    CEF_ColorSidePanelDialogSecondaryForeground = 1293,
+    CEF_ColorSidePanelDivider = 1294,
+    CEF_ColorSidePanelEditFooterBorder = 1295,
+    CEF_ColorSidePanelComboboxEntryIcon = 1296,
+    CEF_ColorSidePanelComboboxEntryTitle = 1297,
+    CEF_ColorSidePanelEntryIcon = 1298,
+    CEF_ColorSidePanelEntryDropdownIcon = 1299,
+    CEF_ColorSidePanelEntryTitle = 1300,
+    CEF_ColorSidePanelFilterChipBorder = 1301,
+    CEF_ColorSidePanelFilterChipForeground = 1302,
+    CEF_ColorSidePanelFilterChipForegroundSelected = 1303,
+    CEF_ColorSidePanelFilterChipIcon = 1304,
+    CEF_ColorSidePanelFilterChipIconSelected = 1305,
+    CEF_ColorSidePanelFilterChipBackgroundHover = 1306,
+    CEF_ColorSidePanelFilterChipBackgroundSelected = 1307,
+    CEF_ColorSidePanelHeaderButtonIcon = 1308,
+    CEF_ColorSidePanelHeaderButtonIconDisabled = 1309,
+    CEF_ColorSidePanelHoverResizeAreaHandle = 1310,
+    CEF_ColorSidePanelResizeAreaHandle = 1311,
+    CEF_ColorSidePanelScrollbarThumb = 1312,
+    CEF_ColorSidePanelTextfieldBorder = 1313,
+    CEF_ColorSidePanelWallpaperSearchTileBackground = 1314,
+    CEF_ColorSidePanelWallpaperSearchErrorButtonBackground = 1315,
+    CEF_ColorSidePanelWallpaperSearchErrorButtonText = 1316,
+    CEF_ColorSidePanelWallpaperSearchInspirationDescriptors = 1317,
+    CEF_ColorSplitViewBackground = 1318,
+    CEF_ColorStarRatingFullIcon = 1319,
+    CEF_ColorStarRatingEmptyIcon = 1320,
+    CEF_ColorStatusBubbleBackgroundFrameActive = 1321,
+    CEF_ColorStatusBubbleBackgroundFrameInactive = 1322,
+    CEF_ColorStatusBubbleForegroundFrameActive = 1323,
+    CEF_ColorStatusBubbleForegroundFrameInactive = 1324,
+    CEF_ColorStatusBubbleShadow = 1325,
+    CEF_ColorTabAlertAudioPlayingActiveFrameActive = 1326,
+    CEF_ColorTabAlertAudioPlayingActiveFrameInactive = 1327,
+    CEF_ColorTabAlertAudioPlayingInactiveFrameActive = 1328,
+    CEF_ColorTabAlertAudioPlayingInactiveFrameInactive = 1329,
+    CEF_ColorTabAlertMediaRecordingActiveFrameActive = 1330,
+    CEF_ColorTabAlertMediaRecordingActiveFrameInactive = 1331,
+    CEF_ColorTabAlertMediaRecordingInactiveFrameActive = 1332,
+    CEF_ColorTabAlertMediaRecordingInactiveFrameInactive = 1333,
+    CEF_ColorTabAlertPipPlayingActiveFrameActive = 1334,
+    CEF_ColorTabAlertPipPlayingActiveFrameInactive = 1335,
+    CEF_ColorTabAlertPipPlayingInactiveFrameActive = 1336,
+    CEF_ColorTabAlertPipPlayingInactiveFrameInactive = 1337,
+    CEF_ColorHoverCardTabAlertMediaRecordingIcon = 1338,
+    CEF_ColorHoverCardTabAlertPipPlayingIcon = 1339,
+    CEF_ColorHoverCardTabAlertAudioPlayingIcon = 1340,
+    CEF_ColorTabBackgroundActiveFrameActive = 1341,
+    CEF_ColorTabBackgroundActiveFrameInactive = 1342,
+    CEF_ColorTabBackgroundInactiveFrameActive = 1343,
+    CEF_ColorTabBackgroundInactiveFrameInactive = 1344,
+    CEF_ColorTabBackgroundInactiveHoverFrameActive = 1345,
+    CEF_ColorTabBackgroundInactiveHoverFrameInactive = 1346,
+    CEF_ColorTabBackgroundSelectedFrameActive = 1347,
+    CEF_ColorTabBackgroundSelectedFrameInactive = 1348,
+    CEF_ColorTabBackgroundSelectedHoverFrameActive = 1349,
+    CEF_ColorTabBackgroundSelectedHoverFrameInactive = 1350,
+    CEF_ColorTabCloseButtonFocusRingActive = 1351,
+    CEF_ColorTabCloseButtonFocusRingInactive = 1352,
+    CEF_ColorTabDiscardRingFrameActive = 1353,
+    CEF_ColorTabDiscardRingFrameInactive = 1354,
+    CEF_ColorTabFocusRingActive = 1355,
+    CEF_ColorTabFocusRingInactive = 1356,
+    CEF_ColorTabForegroundActiveFrameActive = 1357,
+    CEF_ColorTabForegroundActiveFrameInactive = 1358,
+    CEF_ColorTabForegroundInactiveFrameActive = 1359,
+    CEF_ColorTabForegroundInactiveFrameInactive = 1360,
+    CEF_ColorTabDividerFrameActive = 1361,
+    CEF_ColorTabDividerFrameInactive = 1362,
+    CEF_ColorTabHoverCardBackground = 1363,
+    CEF_ColorTabHoverCardForeground = 1364,
+    CEF_ColorTabHoverCardSecondaryText = 1365,
+    CEF_ColorTabGroupBookmarkBarGrey = 1366,
+    CEF_ColorTabGroupBookmarkBarBlue = 1367,
+    CEF_ColorTabGroupBookmarkBarRed = 1368,
+    CEF_ColorTabGroupBookmarkBarYellow = 1369,
+    CEF_ColorTabGroupBookmarkBarGreen = 1370,
+    CEF_ColorTabGroupBookmarkBarPink = 1371,
+    CEF_ColorTabGroupBookmarkBarPurple = 1372,
+    CEF_ColorTabGroupBookmarkBarCyan = 1373,
+    CEF_ColorTabGroupBookmarkBarOrange = 1374,
+    CEF_ColorTabGroupContextMenuBlue = 1375,
+    CEF_ColorTabGroupContextMenuCyan = 1376,
+    CEF_ColorTabGroupContextMenuGreen = 1377,
+    CEF_ColorTabGroupContextMenuGrey = 1378,
+    CEF_ColorTabGroupContextMenuOrange = 1379,
+    CEF_ColorTabGroupContextMenuPink = 1380,
+    CEF_ColorTabGroupContextMenuPurple = 1381,
+    CEF_ColorTabGroupContextMenuRed = 1382,
+    CEF_ColorTabGroupContextMenuYellow = 1383,
+    CEF_ColorTabGroupDialogGrey = 1384,
+    CEF_ColorTabGroupDialogBlue = 1385,
+    CEF_ColorTabGroupDialogRed = 1386,
+    CEF_ColorTabGroupDialogYellow = 1387,
+    CEF_ColorTabGroupDialogGreen = 1388,
+    CEF_ColorTabGroupDialogPink = 1389,
+    CEF_ColorTabGroupDialogPurple = 1390,
+    CEF_ColorTabGroupDialogCyan = 1391,
+    CEF_ColorTabGroupDialogOrange = 1392,
+    CEF_ColorTabGroupDialogIconEnabled = 1393,
+    CEF_ColorTabGroupTabStripFrameActiveGrey = 1394,
+    CEF_ColorTabGroupTabStripFrameActiveBlue = 1395,
+    CEF_ColorTabGroupTabStripFrameActiveRed = 1396,
+    CEF_ColorTabGroupTabStripFrameActiveYellow = 1397,
+    CEF_ColorTabGroupTabStripFrameActiveGreen = 1398,
+    CEF_ColorTabGroupTabStripFrameActivePink = 1399,
+    CEF_ColorTabGroupTabStripFrameActivePurple = 1400,
+    CEF_ColorTabGroupTabStripFrameActiveCyan = 1401,
+    CEF_ColorTabGroupTabStripFrameActiveOrange = 1402,
+    CEF_ColorTabGroupTabStripFrameInactiveGrey = 1403,
+    CEF_ColorTabGroupTabStripFrameInactiveBlue = 1404,
+    CEF_ColorTabGroupTabStripFrameInactiveRed = 1405,
+    CEF_ColorTabGroupTabStripFrameInactiveYellow = 1406,
+    CEF_ColorTabGroupTabStripFrameInactiveGreen = 1407,
+    CEF_ColorTabGroupTabStripFrameInactivePink = 1408,
+    CEF_ColorTabGroupTabStripFrameInactivePurple = 1409,
+    CEF_ColorTabGroupTabStripFrameInactiveCyan = 1410,
+    CEF_ColorTabGroupTabStripFrameInactiveOrange = 1411,
+    CEF_ColorTabStrokeFrameActive = 1412,
+    CEF_ColorTabStrokeFrameInactive = 1413,
+    CEF_ColorTabstripLoadingProgressBackground = 1414,
+    CEF_ColorTabstripLoadingProgressForeground = 1415,
+    CEF_ColorTabstripScrollContainerShadow = 1416,
+    CEF_ColorTabThrobber = 1417,
+    CEF_ColorTabThrobberPreconnect = 1418,
+    CEF_ColorTabSearchButtonBackground = 1419,
+    CEF_ColorTabSearchButtonIcon = 1420,
+    CEF_ColorTabSearchButtonIconBackground = 1421,
+    CEF_ColorTabSearchBackground = 1422,
+    CEF_ColorTabSearchButtonCRForegroundFrameActive = 1423,
+    CEF_ColorTabSearchButtonCRForegroundFrameInactive = 1424,
+    CEF_ColorTabSearchCardBackground = 1425,
+    CEF_ColorTabSearchDisabled = 1426,
+    CEF_ColorTabSearchDisabledContainer = 1427,
+    CEF_ColorTabSearchDivider = 1428,
+    CEF_ColorTabSearchFooterBackground = 1429,
+    CEF_ColorTabSearchImageTabContentBottom = 1430,
+    CEF_ColorTabSearchImageTabContentTop = 1431,
+    CEF_ColorTabSearchImageTabText = 1432,
+    CEF_ColorTabSearchImageWindowFrame = 1433,
+    CEF_ColorTabSearchMediaIcon = 1434,
+    CEF_ColorTabSearchMediaRecordingIcon = 1435,
+    CEF_ColorTabSearchMediaGlicActiveIcon = 1436,
+    CEF_ColorTabSearchPrimaryForeground = 1437,
+    CEF_ColorTabSearchSecondaryForeground = 1438,
+    CEF_ColorTabSearchSelected = 1439,
+    CEF_ColorTabSearchScrollbarThumb = 1440,
+    CEF_ColorTaskManagerBackground = 1441,
+    CEF_ColorTaskManagerTableBackground = 1442,
+    CEF_ColorTaskManagerTableBackgroundAlternate = 1443,
+    CEF_ColorTaskManagerTableBackgroundSelectedFocused = 1444,
+    CEF_ColorTaskManagerTableBackgroundSelectedUnfocused = 1445,
+    CEF_ColorTaskManagerTableHeaderBackground = 1446,
+    CEF_ColorTaskManagerSearchBarBackground = 1447,
+    CEF_ColorTaskManagerSearchBarTransparent = 1448,
+    CEF_ColorTaskManagerSearchBarPlaceholderText = 1449,
+    CEF_ColorThumbnailTabBackground = 1450,
+    CEF_ColorThumbnailTabForeground = 1451,
+    CEF_ColorThumbnailTabStripBackgroundActive = 1452,
+    CEF_ColorThumbnailTabStripBackgroundInactive = 1453,
+    CEF_ColorThumbnailTabStripTabGroupFrameActiveGrey = 1454,
+    CEF_ColorThumbnailTabStripTabGroupFrameActiveBlue = 1455,
+    CEF_ColorThumbnailTabStripTabGroupFrameActiveRed = 1456,
+    CEF_ColorThumbnailTabStripTabGroupFrameActiveYellow = 1457,
+    CEF_ColorThumbnailTabStripTabGroupFrameActiveGreen = 1458,
+    CEF_ColorThumbnailTabStripTabGroupFrameActivePink = 1459,
+    CEF_ColorThumbnailTabStripTabGroupFrameActivePurple = 1460,
+    CEF_ColorThumbnailTabStripTabGroupFrameActiveCyan = 1461,
+    CEF_ColorThumbnailTabStripTabGroupFrameActiveOrange = 1462,
+    CEF_ColorThumbnailTabStripTabGroupFrameInactiveGrey = 1463,
+    CEF_ColorThumbnailTabStripTabGroupFrameInactiveBlue = 1464,
+    CEF_ColorThumbnailTabStripTabGroupFrameInactiveRed = 1465,
+    CEF_ColorThumbnailTabStripTabGroupFrameInactiveYellow = 1466,
+    CEF_ColorThumbnailTabStripTabGroupFrameInactiveGreen = 1467,
+    CEF_ColorThumbnailTabStripTabGroupFrameInactivePink = 1468,
+    CEF_ColorThumbnailTabStripTabGroupFrameInactivePurple = 1469,
+    CEF_ColorThumbnailTabStripTabGroupFrameInactiveCyan = 1470,
+    CEF_ColorThumbnailTabStripTabGroupFrameInactiveOrange = 1471,
+    CEF_ColorToolbar = 1472,
+    CEF_ColorToolbarBackgroundSubtleEmphasis = 1473,
+    CEF_ColorToolbarBackgroundSubtleEmphasisHovered = 1474,
+    CEF_ColorToolbarButtonBackgroundHighlightedDefault = 1475,
+    CEF_ColorToolbarButtonBorder = 1476,
+    CEF_ColorToolbarButtonIcon = 1477,
+    CEF_ColorToolbarButtonIconDefault = 1478,
+    CEF_ColorToolbarButtonIconDisabled = 1479,
+    CEF_ColorToolbarButtonIconHovered = 1480,
+    CEF_ColorToolbarButtonIconInactive = 1481,
+    CEF_ColorToolbarButtonIconPressed = 1482,
+    CEF_ColorToolbarButtonText = 1483,
+    CEF_ColorToolbarCloseButtonBackgroundDefault = 1484,
+    CEF_ColorToolbarContentAreaSeparator = 1485,
+    CEF_ColorToolbarExtensionSeparatorDisabled = 1486,
+    CEF_ColorToolbarExtensionSeparatorEnabled = 1487,
+    CEF_ColorToolbarFeaturePromoHighlight = 1488,
+    CEF_ColorToolbarGlicButtonBackgroundDefault = 1489,
+    CEF_ColorToolbarIconContainerBorder = 1490,
+    CEF_ColorToolbarInkDrop = 1491,
+    CEF_ColorToolbarInkDropHover = 1492,
+    CEF_ColorToolbarInkDropRipple = 1493,
+    CEF_ColorToolbarSeparator = 1494,
+    CEF_ColorToolbarActionItemEngaged = 1495,
+    CEF_ColorToolbarSeparatorDefault = 1496,
+    CEF_ColorToolbarText = 1497,
+    CEF_ColorToolbarTextDefault = 1498,
+    CEF_ColorToolbarTextDisabled = 1499,
+    CEF_ColorToolbarTextDisabledDefault = 1500,
+    CEF_ColorToolbarTopSeparatorFrameActive = 1501,
+    CEF_ColorToolbarTopSeparatorFrameInactive = 1502,
+    CEF_ColorVerticalTabStripShadow = 1503,
+    CEF_ColorVerticalTabPinnedOutline = 1504,
+    CEF_ColorWebAuthnHoverButtonForeground = 1505,
+    CEF_ColorWebAuthnHoverButtonForegroundDisabled = 1506,
+    CEF_ColorWebAuthnBackArrowButtonIcon = 1507,
+    CEF_ColorWebAuthnBackArrowButtonIconDisabled = 1508,
+    CEF_ColorWebAuthnIconColor = 1509,
+    CEF_ColorWebAuthnIconColorDisabled = 1510,
+    CEF_ColorWebAuthnPinTextfieldBottomBorder = 1511,
+    CEF_ColorWebAuthnProgressRingBackground = 1512,
+    CEF_ColorWebAuthnProgressRingForeground = 1513,
+    CEF_ColorWebContentsBackground = 1514,
+    CEF_ColorWebContentsBackgroundLetterboxing = 1515,
+    CEF_ColorWebUiTabStripBackground = 1516,
+    CEF_ColorWebUiTabStripFocusOutline = 1517,
+    CEF_ColorWebUiTabStripIndicatorCapturing = 1518,
+    CEF_ColorWebUiTabStripIndicatorPip = 1519,
+    CEF_ColorWebUiTabStripIndicatorRecording = 1520,
+    CEF_ColorWebUiTabStripScrollbarThumb = 1521,
+    CEF_ColorWebUiTabStripTabActiveTitleBackground = 1522,
+    CEF_ColorWebUiTabStripTabActiveTitleContent = 1523,
+    CEF_ColorWebUiTabStripTabBackground = 1524,
+    CEF_ColorWebUiTabStripTabBlocked = 1525,
+    CEF_ColorWebUiTabStripTabLoadingSpinning = 1526,
+    CEF_ColorWebUiTabStripTabSeparator = 1527,
+    CEF_ColorWebUiTabStripTabText = 1528,
+    CEF_ColorWebUiTabStripTabWaitingSpinning = 1529,
+    CEF_ColorWindowControlButtonBackgroundActive = 1530,
+    CEF_ColorWindowControlButtonBackgroundInactive = 1531,
+    CEF_ChromeColorsEnd = 1532,
+    CEF_UiColorsLast = 65535,
 }

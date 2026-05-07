@@ -20,6 +20,9 @@
 #include "include/capi/cef_client_capi.h"
 #include "include/capi/cef_command_handler_capi.h"
 #include "include/capi/cef_command_line_capi.h"
+#if CEF_VERSION_MAJOR >= 147
+#include "include/capi/cef_component_updater_capi.h"
+#endif
 #include "include/capi/cef_context_menu_handler_capi.h"
 #include "include/capi/cef_cookie_capi.h"
 #include "include/capi/cef_crash_util_capi.h"
@@ -110,5 +113,6 @@
 #include "include/capi/views/cef_view_delegate_capi.h"
 #include "include/capi/views/cef_window_capi.h"
 #include "include/capi/views/cef_window_delegate_capi.h"
+#include "include/cef_color_ids.h"
 
 #endif

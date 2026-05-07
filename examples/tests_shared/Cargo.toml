@@ -32,3 +32,4 @@ objc2-foundation.workspace = true
 
 [target.'cfg(target_os = "linux")'.dependencies]
 glib.workspace = true
+glib-unix.workspace = true

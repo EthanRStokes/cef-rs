@@ -1,7 +1,10 @@
 #[cfg(not(feature = "dox"))]
 fn main() -> anyhow::Result<()> {
     use download_cef::{CefIndex, OsAndArch};
-    use std::{env, fs, path::PathBuf};
+    use std::{
+        env, fs,
+        path::{Path, PathBuf},
+    };
 
     println!("cargo::rerun-if-changed=build.rs");
 
@@ -10,45 +13,99 @@ fn main() -> anyhow::Result<()> {
 
     println!("cargo::rerun-if-env-changed=FLATPAK");
     println!("cargo::rerun-if-env-changed=CEF_PATH");
-    let cef_path_env = env::var("FLATPAK")
-        .map(|_| String::from("/usr/lib"))
-        .or_else(|_| env::var("CEF_PATH"));
+    let package_version = env::var("CARGO_PKG_VERSION")?;
+    let cef_version = download_cef::default_version(&package_version);
 
-    let cef_dir = match cef_path_env {
-        Ok(cef_path) => {
-            // Allow overriding the CEF path with environment variables.
-            println!("Using CEF path from environment: {cef_path}");
-            download_cef::check_archive_json(&env::var("CARGO_PKG_VERSION")?, &cef_path)?;
-            PathBuf::from(cef_path)
-        }
-        Err(_) => {
-            let out_dir = PathBuf::from(env::var("OUT_DIR")?);
-            let cef_dir = os_arch.to_string();
-            let cef_dir = out_dir.join(&cef_dir);
-
-            if !fs::exists(&cef_dir)? {
-                let cef_version = download_cef::default_version(&env::var("CARGO_PKG_VERSION")?);
-                let index = CefIndex::download()?;
-                let platform = index.platform(&target)?;
-                let version = platform.version(&cef_version)?;
-
-                let archive = version.download_archive(&out_dir, false)?;
-                let extracted_dir =
-                    download_cef::extract_target_archive(&target, &archive, &out_dir, false)?;
-                if extracted_dir != cef_dir {
-                    return Err(anyhow::anyhow!(
-                        "extracted dir {extracted_dir:?} does not match cef_dir {cef_dir:?}",
-                    ));
-                }
-
-                version.write_archive_json(extracted_dir)?;
-            }
-
-            cef_dir
-        }
+    let check_archive = |path: &Path| -> anyhow::Result<()> {
+        download_cef::check_archive_json(&package_version, &path.to_string_lossy())?;
+        Ok(())
     };
 
-    let cef_dir = cef_dir.display().to_string();
+    let resolve_cef_dir = |location: &Path| -> anyhow::Result<PathBuf> {
+        let cef_dir = location.join(os_arch.to_string());
+
+        if !fs::exists(&cef_dir)? {
+            let download_url = download_cef::default_download_url();
+            let index = CefIndex::download_from(&download_url)?;
+            let platform = index.platform(&target)?;
+            let version = platform.version(&cef_version)?;
+
+            let archive = version.download_archive_from(&download_url, location, false)?;
+            let extracted_dir =
+                download_cef::extract_target_archive(&target, &archive, location, false)?;
+            let extracted_dir_canonical = fs::canonicalize(&extracted_dir)?;
+            let cef_dir_canonical = fs::canonicalize(&cef_dir)?;
+            if extracted_dir_canonical != cef_dir_canonical {
+                return Err(anyhow::anyhow!(
+                    "extracted dir {extracted_dir_canonical:?} does not match cef_dir {cef_dir_canonical:?}",
+                ));
+            }
+
+            version.write_archive_json(extracted_dir)?;
+        }
+
+        Ok(cef_dir)
+    };
+
+    let resolve_from_versioned = |configured_path: &Path| -> anyhow::Result<PathBuf> {
+        let versioned_location = configured_path.join(&cef_version);
+        let resolved = resolve_cef_dir(&versioned_location)?;
+        println!(
+            "Using versioned CEF path from environment: {}",
+            resolved.display()
+        );
+        check_archive(&resolved)?;
+        Ok(resolved)
+    };
+
+    let download_to_versioned = |configured_path: &Path, reason: &str| -> anyhow::Result<PathBuf> {
+        let versioned_location = configured_path.join(&cef_version);
+        println!(
+            "{reason}, downloading archive to: {}",
+            versioned_location.display()
+        );
+        let resolved = resolve_cef_dir(&versioned_location)?;
+        println!("Using downloaded CEF path: {}", resolved.display());
+        Ok(resolved)
+    };
+
+    let cef_dir = if env::var("FLATPAK").is_ok() {
+        let cef_path = String::from("/usr/lib");
+        println!("Using CEF path from FLATPAK: {cef_path}");
+        let cef_path = PathBuf::from(cef_path);
+        check_archive(&cef_path)?;
+        cef_path
+    } else if let Ok(cef_path) = env::var("CEF_PATH") {
+        let configured_path = PathBuf::from(cef_path);
+        if fs::exists(&configured_path)? {
+            let versioned_location = configured_path.join(&cef_version);
+            if fs::exists(&versioned_location)? {
+                resolve_from_versioned(&configured_path)?
+            } else {
+                println!(
+                    "Using CEF path from environment: {}",
+                    configured_path.display()
+                );
+                match check_archive(&configured_path) {
+                    Ok(()) => configured_path,
+                    Err(error) => download_to_versioned(
+                        &configured_path,
+                        &format!("CEF_PATH is invalid ({error})"),
+                    )?,
+                }
+            }
+        } else {
+            download_to_versioned(&configured_path, "CEF_PATH does not exist")?
+        }
+    } else {
+        let out_dir = PathBuf::from(env::var("OUT_DIR")?);
+        resolve_cef_dir(&out_dir)?
+    };
+
+    let cef_dir = cef_dir.to_string_lossy().into_owned();
+
+    // Re-run when the resolved CEF directory changes/deletes.
+    println!("cargo::rerun-if-changed={cef_dir}");
 
     println!("cargo::metadata=CEF_DIR={cef_dir}");
     println!("cargo::rustc-link-search=native={cef_dir}");
@@ -100,8 +157,8 @@ fn main() -> anyhow::Result<()> {
                 .define("PROJECT_ARCH", project_arch)
                 .define("USE_SANDBOX", sandbox)
                 .build()
-                .display()
-                .to_string();
+                .to_string_lossy()
+                .into_owned();
 
             println!("cargo::rustc-link-search=native={build_dir}/build/libcef_dll_wrapper");
             println!("cargo::rustc-link-lib=static=libcef_dll_wrapper");
@@ -116,8 +173,8 @@ fn main() -> anyhow::Result<()> {
                 .define("PROJECT_ARCH", project_arch)
                 .define("USE_SANDBOX", sandbox)
                 .build()
-                .display()
-                .to_string();
+                .to_string_lossy()
+                .into_owned();
             println!("cargo::rustc-link-search=native={build_dir}/build/libcef_dll_wrapper");
             println!("cargo::rustc-link-lib=static=cef_dll_wrapper");
         }

@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [147.0.0+147.0.9](https://github.com/tauri-apps/cef-rs/compare/cef-dll-sys-v146.7.0+146.0.12...cef-dll-sys-v147.0.0+147.0.9) - 2026-04-25
+
+### Other
+
+- update bindings
+
+## [146.5.0+146.0.10](https://github.com/tauri-apps/cef-rs/compare/cef-dll-sys-v146.4.1+146.0.9...cef-dll-sys-v146.5.0+146.0.10) - 2026-04-05
+
+### Other
+
+- update bindings
+
+## [146.4.1+146.0.9](https://github.com/tauri-apps/cef-rs/compare/cef-dll-sys-v146.4.0+146.0.9...cef-dll-sys-v146.4.1+146.0.9) - 2026-04-03
+
+### Fixed
+
+- download CEF from custom URL
+
+## [146.4.0+146.0.9](https://github.com/tauri-apps/cef-rs/compare/cef-dll-sys-v146.3.0+146.0.9...cef-dll-sys-v146.4.0+146.0.9) - 2026-04-02
+
+### Added
+
+- allow configuring CEF_DOWNLOAD_URL for build script
+
+### Other
+
+- Merge pull request #384 from tauri-apps/release-plz-2026-03-27T20-54-43Z
+- add missing rerun-if-changed instruction [skip ci]
+
+## [146.3.0+146.0.9](https://github.com/tauri-apps/cef-rs/compare/cef-dll-sys-v146.2.0+146.0.9...cef-dll-sys-v146.3.0+146.0.9) - 2026-04-01
+
+### Added
+
+- improve CEF_PATH usage
+
+## [145.6.1+145.0.28](https://github.com/tauri-apps/cef-rs/compare/cef-dll-sys-v145.6.0+145.0.28...cef-dll-sys-v145.6.1+145.0.28) - 2026-03-08
+
+### Other
+
+- update bindings
+- Merge pull request #368 from tauri-apps/feat/cef_color_ids
+
+## [144.3.0+144.0.12](https://github.com/tauri-apps/cef-rs/compare/cef-dll-sys-v144.2.0+144.0.11...cef-dll-sys-v144.3.0+144.0.12) - 2026-01-31
+
+### Other
+
+- update bindings
+
+## [144.0.1+144.0.6](https://github.com/tauri-apps/cef-rs/compare/cef-dll-sys-v144.0.0+144.0.6...cef-dll-sys-v144.0.1+144.0.6) - 2026-01-22
+
+### Other
+
+- release v144.0.0+144.0.6
+
+## [144.0.0+144.0.6](https://github.com/tauri-apps/cef-rs/releases/tag/cef-dll-sys-v144.0.0+144.0.6) - 2026-01-22
+
+### Other
+
+- update bindings
+
 ## [143.4.0+143.0.13](https://github.com/tauri-apps/cef-rs/compare/cef-dll-sys-v143.3.0+143.0.13...cef-dll-sys-v143.4.0+143.0.13) - 2025-12-30
 
 ### Added

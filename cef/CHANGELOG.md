@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [147.0.0+147.0.9](https://github.com/tauri-apps/cef-rs/compare/cef-v146.7.0+146.0.12...cef-v147.0.0+147.0.9) - 2026-04-25
+
+### Other
+
+- update bindings
+
+## [145.6.1+145.0.28](https://github.com/tauri-apps/cef-rs/compare/cef-v145.6.0+145.0.28...cef-v145.6.1+145.0.28) - 2026-03-08
+
+### Other
+
+- update bindings
+
+## [145.1.1+145.0.23](https://github.com/tauri-apps/cef-rs/compare/cef-v145.1.0+145.0.23...cef-v145.1.1+145.0.23) - 2026-02-16
+
+### Other
+
+- Merge branch 'dev' into fix/cefquery-persistent-field
+- Merge pull request #348 from tasuren/message-router-patch
+
+### Fixed
+
+- Filter undefined values for optional cefQuery persistent field
+- port missing early returns in BrowserSideRouter and BrowserInfoMap to prevent panics during startup
+- return string responses as V8 strings instead of ArrayBuffer from RendererSideRouter
+
+## [144.0.1+144.0.6](https://github.com/tauri-apps/cef-rs/compare/cef-v144.0.0+144.0.6...cef-v144.0.1+144.0.6) - 2026-01-22
+
+### Other
+
+- Merge pull request #332 from csmoe/patch-1
+- release v144.0.0+144.0.6
+- update bindings
+
+## [144.0.0+144.0.6](https://github.com/tauri-apps/cef-rs/releases/tag/cef-v144.0.0+144.0.6) - 2026-01-22
+
+### Other
+
+- update bindings
+
 ## [143.7.1+143.0.14](https://github.com/tauri-apps/cef-rs/compare/cef-v143.7.0+143.0.14...cef-v143.7.1+143.0.14) - 2026-01-13
 
 ### Other
