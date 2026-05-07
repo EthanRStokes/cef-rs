@@ -540,7 +540,7 @@ where
         cef_dir.join(LIBCEF_DLL_DIR),
     )?;
     const CREDITS_HTML: &str = "CREDITS.html";
-    fs::rename(extracted_dir.join(CREDITS_HTML), cef_dir.join(CREDITS_HTML))?;
+    fs_err::rename(extracted_dir.join(CREDITS_HTML), cef_dir.join(CREDITS_HTML))?;
 
     if show_progress {
         println!("Moved contents to: {}", cef_dir.display());
