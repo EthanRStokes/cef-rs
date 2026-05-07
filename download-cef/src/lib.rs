@@ -2,6 +2,7 @@
 
 use bzip2::bufread::BzDecoder;
 use clap::ValueEnum;
+use fs_err::File;
 use regex::Regex;
 use semver::Version;
 use serde::{Deserialize, Serialize};
@@ -10,7 +11,6 @@ use std::{
     collections::HashMap,
     env,
     fmt::{self, Display},
-    fs::{self, File},
     io::{self, BufReader, IsTerminal, Write},
     path::{Path, PathBuf},
     sync::{Mutex, OnceLock},
@@ -253,7 +253,7 @@ impl CefVersion {
         let file = self.minimal()?;
         let (file, sha) = (file.name.as_str(), file.sha1.as_str());
 
-        fs::create_dir_all(&location)?;
+        fs_err::create_dir_all(&location)?;
         let download_file = location.as_ref().join(file);
 
         if download_file.exists() {
@@ -268,8 +268,8 @@ impl CefVersion {
                 println!("Cleaning corrupted archive: {}", download_file.display());
             }
             let corrupted_file = location.as_ref().join(format!("corrupted_{file}"));
-            fs::rename(&download_file, &corrupted_file)?;
-            fs::remove_file(&corrupted_file)?;
+            fs_err::rename(&download_file, &corrupted_file)?;
+            fs_err::remove_file(&corrupted_file)?;
         }
 
         let cef_url = format!("{url}/{file}");
@@ -486,7 +486,7 @@ where
     if show_progress {
         println!("Extracting archive: {}", archive.as_ref().display());
     }
-    let decoder = BzDecoder::new(BufReader::new(File::open(&archive)?));
+    let decoder = BzDecoder::new(BufReader::new(File::open(archive.as_ref())?));
     tar::Archive::new(decoder).unpack(&location)?;
 
     let extracted_dir = archive
@@ -511,37 +511,37 @@ where
         if show_progress {
             println!("Cleaning up: {}", old_dir.display());
         }
-        fs::rename(&cef_dir, &old_dir)?;
-        fs::remove_dir_all(old_dir)?;
+        fs_err::rename(&cef_dir, &old_dir)?;
+        fs_err::remove_dir_all(old_dir)?;
     }
     const RELEASE_DIR: &str = "Release";
-    fs::rename(extracted_dir.join(RELEASE_DIR), &cef_dir)?;
+    fs_err::rename(extracted_dir.join(RELEASE_DIR), &cef_dir)?;
 
     if os != "macos" {
         let resources = extracted_dir.join("Resources");
 
-        for entry in fs::read_dir(&resources)? {
+        for entry in fs_err::read_dir(&resources)? {
             let entry = entry?;
-            fs::rename(entry.path(), cef_dir.join(entry.file_name()))?;
+            fs_err::rename(entry.path(), cef_dir.join(entry.file_name()))?;
         }
     }
 
     const CMAKE_LISTS_TXT: &str = "CMakeLists.txt";
-    fs::rename(
+    fs_err::rename(
         extracted_dir.join(CMAKE_LISTS_TXT),
         cef_dir.join(CMAKE_LISTS_TXT),
     )?;
     const CMAKE_DIR: &str = "cmake";
-    fs::rename(extracted_dir.join(CMAKE_DIR), cef_dir.join(CMAKE_DIR))?;
+    fs_err::rename(extracted_dir.join(CMAKE_DIR), cef_dir.join(CMAKE_DIR))?;
     const INCLUDE_DIR: &str = "include";
-    fs::rename(extracted_dir.join(INCLUDE_DIR), cef_dir.join(INCLUDE_DIR))?;
+    fs_err::rename(extracted_dir.join(INCLUDE_DIR), cef_dir.join(INCLUDE_DIR))?;
     const LIBCEF_DLL_DIR: &str = "libcef_dll";
-    fs::rename(
+    fs_err::rename(
         extracted_dir.join(LIBCEF_DLL_DIR),
         cef_dir.join(LIBCEF_DLL_DIR),
     )?;
     const CREDITS_HTML: &str = "CREDITS.html";
-    fs::rename(extracted_dir.join(CREDITS_HTML), cef_dir.join(CREDITS_HTML))?;
+    fs_err::rename(extracted_dir.join(CREDITS_HTML), cef_dir.join(CREDITS_HTML))?;
 
     if show_progress {
         println!("Moved contents to: {}", cef_dir.display());
@@ -555,8 +555,8 @@ where
     if show_progress {
         println!("Cleaning up: {}", old_dir.display());
     }
-    fs::rename(&extracted_dir, &old_dir)?;
-    fs::remove_dir_all(old_dir)?;
+    fs_err::rename(&extracted_dir, &old_dir)?;
+    fs_err::remove_dir_all(old_dir)?;
 
     Ok(cef_dir)
 }
