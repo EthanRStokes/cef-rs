@@ -124,7 +124,8 @@ fn archive_json_path<P>(location: P) -> PathBuf
 where
     P: AsRef<Path>,
 {
-    location.as_ref().join("archive.json")
+    let location = location.as_ref().join("archive.json");
+    std::path::absolute(&location).unwrap_or(location)
 }
 
 pub const DEFAULT_CDN_URL: &str = "https://cef-builds.spotifycdn.com";

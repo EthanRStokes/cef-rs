@@ -69,6 +69,8 @@ fn main() -> anyhow::Result<()> {
         Ok(resolved)
     };
 
+    let out_dir = PathBuf::from(env::var("OUT_DIR")?);
+
     let cef_dir = if env::var("FLATPAK").is_ok() {
         let cef_path = String::from("/usr/lib");
         println!("Using CEF path from FLATPAK: {cef_path}");
@@ -98,17 +100,25 @@ fn main() -> anyhow::Result<()> {
             download_to_versioned(&configured_path, "CEF_PATH does not exist")?
         }
     } else {
-        let out_dir = PathBuf::from(env::var("OUT_DIR")?);
         resolve_cef_dir(&out_dir)?
     };
 
-    let cef_dir = cef_dir.to_string_lossy().into_owned();
+    // TODO: far from ideal, but there's no other way to get the target dir, see <https://github.com/rust-lang/cargo/issues/9661>
+    let target_dir = out_dir
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+
+    let cef_dir_str = cef_dir.to_string_lossy().into_owned();
 
     // Re-run when the resolved CEF directory changes/deletes.
-    println!("cargo::rerun-if-changed={cef_dir}");
+    println!("cargo::rerun-if-changed={cef_dir_str}");
 
-    println!("cargo::metadata=CEF_DIR={cef_dir}");
-    println!("cargo::rustc-link-search=native={cef_dir}");
+    println!("cargo::metadata=CEF_DIR={cef_dir_str}");
+    println!("cargo::rustc-link-search=native={cef_dir_str}");
 
     let mut cef_dll_wrapper = cmake::Config::new(&cef_dir);
     cef_dll_wrapper
@@ -129,9 +139,19 @@ fn main() -> anyhow::Result<()> {
 
     match os_arch.os {
         "linux" => {
+            // On Windows and Linux the cef files usually have to be next to the main binary.
+            // On macOS it's more complicated so we'll leave it to tools like tauri-cli for now.
+            // TODO: Consider to put this behind a feature flag
+            copy_cef_runtime_files(&cef_dir, target_dir)?;
+
             println!("cargo::rustc-link-lib=dylib=cef");
         }
         "windows" => {
+            // On Windows and Linux the cef files usually have to be next to the main binary.
+            // On macOS it's more complicated so we'll leave it to tools like tauri-cli for now.
+            // TODO: Consider to put this behind a feature flag
+            copy_cef_runtime_files(&cef_dir, target_dir)?;
+
             let sdk_libs = [
                 "comctl32.lib",
                 "delayimp.lib",
@@ -180,6 +200,31 @@ fn main() -> anyhow::Result<()> {
         }
         os => unimplemented!("unknown target {os}"),
     }
+
+    Ok(())
+}
+
+#[cfg(not(feature = "dox"))]
+fn copy_directory(src: &std::path::Path, dest: &std::path::Path) -> Result<(), std::io::Error> {
+    std::fs::create_dir_all(dest)?;
+    for entry in std::fs::read_dir(src)? {
+        let entry = entry?;
+        if entry.path().is_file() {
+            std::fs::copy(entry.path(), dest.join(entry.file_name()))?;
+        }
+    }
+    Ok(())
+}
+
+#[cfg(not(feature = "dox"))]
+fn copy_cef_runtime_files(
+    cef_dir: &std::path::Path,
+    target_dir: &std::path::Path,
+) -> Result<(), std::io::Error> {
+    copy_directory(cef_dir, target_dir)?;
+
+    const LOCALES_DIR: &str = "locales";
+    copy_directory(&cef_dir.join(LOCALES_DIR), &target_dir.join(LOCALES_DIR))?;
 
     Ok(())
 }
