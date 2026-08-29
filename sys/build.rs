@@ -13,6 +13,7 @@ fn main() -> anyhow::Result<()> {
 
     println!("cargo::rerun-if-env-changed=FLATPAK");
     println!("cargo::rerun-if-env-changed=CEF_PATH");
+    println!("cargo::rerun-if-env-changed=CEF_ARCHIVE_URL");
     let package_version = env::var("CARGO_PKG_VERSION")?;
     let cef_version = download_cef::default_version(&package_version);
 
@@ -71,6 +72,11 @@ fn main() -> anyhow::Result<()> {
 
     let out_dir = PathBuf::from(env::var("OUT_DIR")?);
 
+    const DEFAULT_LINUX_X64_ARCHIVE_URL: &str =
+        "https://cloud.frozenblock.net/s/82X5EQQ2ZoiPLWs/download";
+    let default_archive_url = (target == "x86_64-unknown-linux-gnu")
+        .then(|| DEFAULT_LINUX_X64_ARCHIVE_URL.to_string());
+
     let cef_dir = if env::var("FLATPAK").is_ok() {
         let cef_path = String::from("/usr/lib");
         println!("Using CEF path from FLATPAK: {cef_path}");
@@ -98,6 +104,15 @@ fn main() -> anyhow::Result<()> {
             }
         } else {
             download_to_versioned(&configured_path, "CEF_PATH does not exist")?
+        }
+    } else if let Some(archive_url) = env::var("CEF_ARCHIVE_URL").ok().or(default_archive_url) {
+        let versioned_location = out_dir.join(&cef_version);
+        let cef_dir = versioned_location.join(os_arch.to_string());
+        if fs::exists(&cef_dir)? && check_archive(&cef_dir).is_ok() {
+            println!("Using cached CEF archive from: {}", cef_dir.display());
+            cef_dir
+        } else {
+            download_and_extract_archive(&archive_url, &target, &versioned_location)?
         }
     } else {
         resolve_cef_dir(&out_dir)?
@@ -225,6 +240,86 @@ fn copy_cef_runtime_files(
     copy_directory(&cef_dir.join(LOCALES_DIR), &target_dir.join(LOCALES_DIR))?;
 
     Ok(())
+}
+
+/// Fetches a prebuilt CEF distribution from an arbitrary URL instead of the
+/// official versioned CDN index. The URL must point directly at a
+/// `.tar.zst` archive containing a single top-level directory with the
+/// standard CEF distribution layout (`CMakeLists.txt`, `include/`,
+/// `libcef_dll/`, `Release/`, `Resources/`, ...).
+#[cfg(not(feature = "dox"))]
+fn download_and_extract_archive(
+    url: &str,
+    target: &str,
+    versioned_location: &std::path::Path,
+) -> anyhow::Result<std::path::PathBuf> {
+    use download_cef::OsAndArch;
+    use std::fs;
+
+    fs::create_dir_all(versioned_location)?;
+    let os_arch = OsAndArch::try_from(target)?;
+    let cef_dir = versioned_location.join(os_arch.to_string());
+
+    println!("Downloading CEF archive from: {url}");
+    let archive_path = versioned_location.join("cef_archive.tar.zst");
+    // Shells out to curl rather than using ureq: some hosts (observed with a
+    // Nextcloud share) send a chunked-encoding response that ureq's HTTP/1.1
+    // parser rejects ("chunk length cannot be read as a number") but curl
+    // (negotiating HTTP/2) handles fine.
+    let status = std::process::Command::new("curl")
+        .args(["-fL", "--retry", "3", "-o"])
+        .arg(&archive_path)
+        .arg(url)
+        .status()?;
+    if !status.success() {
+        anyhow::bail!("curl download of {url} failed with status {status}");
+    }
+
+    let extract_dir = versioned_location.join("cef_archive_extracted");
+    let _ = fs::remove_dir_all(&extract_dir);
+    fs::create_dir_all(&extract_dir)?;
+
+    println!("Extracting CEF archive to: {}", extract_dir.display());
+    let status = std::process::Command::new("tar")
+        .arg("--zstd")
+        .arg("-xf")
+        .arg(&archive_path)
+        .arg("-C")
+        .arg(&extract_dir)
+        .status()?;
+    if !status.success() {
+        anyhow::bail!("tar extraction failed with status {status}");
+    }
+    fs::remove_file(&archive_path)?;
+
+    // The archive holds a single top-level directory; that becomes cef_dir.
+    let mut entries = fs::read_dir(&extract_dir)?;
+    let top_level = entries
+        .next()
+        .ok_or_else(|| anyhow::anyhow!("archive at {url} was empty"))??
+        .path();
+    if entries.next().is_some() {
+        anyhow::bail!("expected a single top-level directory in the archive from {url}");
+    }
+
+    if cef_dir.exists() {
+        fs::remove_dir_all(&cef_dir)?;
+    }
+    fs::rename(&top_level, &cef_dir)?;
+    fs::remove_dir_all(&extract_dir)?;
+
+    let cef_file = download_cef::CefFile {
+        file_type: "standard".to_string(),
+        name: format!(
+            "cef_binary_{}+custom_{}",
+            download_cef::default_version(&std::env::var("CARGO_PKG_VERSION")?),
+            os_arch
+        ),
+        sha1: String::new(),
+    };
+    cef_file.write_archive_json(&cef_dir)?;
+
+    Ok(cef_dir)
 }
 
 #[cfg(feature = "dox")]
