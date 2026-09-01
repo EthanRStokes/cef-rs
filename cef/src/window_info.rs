@@ -28,7 +28,12 @@ impl WindowInfo {
     /// `<select>` dropdowns and tooltips, and may be `None` if the host toolkit
     /// doesn't expose it, in which case popups fall back to a degraded form. It
     /// is ignored under X11.
-    #[cfg(target_os = "linux")]
+    ///
+    /// Only available on `x86_64-unknown-linux-gnu`: the `parent_xdg_surface`
+    /// field comes from our Wayland patch on top of upstream CEF, and only the
+    /// x86_64 Linux CEF archive (built from `cef-wayland-build`) carries it --
+    /// the official prebuilt archives used for other Linux architectures don't.
+    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
     pub fn set_as_child_wayland(
         self,
         parent: cef_window_handle_t,
